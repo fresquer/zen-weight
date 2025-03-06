@@ -1,11 +1,16 @@
+import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
 import { createClient } from '@supabase/supabase-js';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/services/useAuth';
 
-const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_KEY);
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_KEY
+);
 
-export function useWeight() {
+export const useWeightStore = defineStore('weightStore', () => {
   const { user } = useAuth();
+
   const weights = ref([]);
   const goals = ref(null);
 
@@ -20,17 +25,31 @@ export function useWeight() {
 
   const fetchWeights = async () => {
     await userReady;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('weights')
       .select('*')
       .eq('user_id', user.value.id)
       .order('date', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching weights:', error);
+      throw error;
+    }
+
     weights.value = data || [];
   };
 
   const addWeight = async ({ value, date }) => {
     await userReady;
-    await supabase.from('weights').insert([{ user_id: user.value.id, weight: value, date }]);
+    const { data, error } = await supabase.from('weights').insert([
+      { user_id: user.value.id, weight: value, date }
+    ]).select();
+
+    if (error) {
+      console.error('Error adding weight:', error);
+      throw error;
+    }
+
     await fetchWeights();
   };
 
@@ -46,10 +65,35 @@ export function useWeight() {
 
   const setGoal = async (startingWeight, targetWeight, steps = 5) => {
     await userReady;
-    await supabase
-      .from('goals')
-      .insert([{ user_id: user.value.id, starting_weight: startingWeight, target_weight: targetWeight, steps }]);
+    await supabase.from('goals').insert([
+      {
+        user_id: user.value.id,
+        starting_weight: startingWeight,
+        target_weight: targetWeight,
+        steps
+      }
+    ]);
     await fetchGoals();
+  };
+
+  const editWeight = async (id, { value, date }) => {
+    await userReady;
+    await supabase
+      .from('weights')
+      .update({ weight: value, date })
+      .eq('id', id)
+      .eq('user_id', user.value.id);
+    await fetchWeights();
+  };
+
+  const deleteWeight = async (id) => {
+    await userReady;
+    await supabase
+      .from('weights')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.value.id);
+    await fetchWeights();
   };
 
   return {
@@ -59,5 +103,7 @@ export function useWeight() {
     addWeight,
     fetchGoals,
     setGoal,
+    editWeight,
+    deleteWeight
   };
-}
+});

@@ -1,19 +1,47 @@
 <script setup>
-import { ref } from 'vue'
-import { useWeight } from '@/services/useWeightTracker'
+import { ref, watch } from 'vue'
+import { useWeightStore } from '@/services/useWeightTracker'
 
-const { addWeight } = useWeight()
+const { addWeight, editWeight, fetchWeights } = useWeightStore()
+
+const props = defineProps({
+  editingEntry: {
+    type: Object,
+    default: null,
+  },
+})
 
 const weight = ref(null)
-const date = ref(new Date().toISOString().slice(0, 10)) // Fecha actual por defecto
+const date = ref(new Date().toISOString().slice(0, 10))
+const time = ref(new Date().toTimeString().slice(0, 5))
 const dialogRef = ref(null)
 const loading = ref(false)
 const errorMessage = ref('')
 
-// 🔹 Registrar el peso en Supabase
-async function registerWeight() {
-  if (!weight.value || !date.value) {
-    errorMessage.value = 'Please enter a valid weight and date.'
+// Watch para actualizar los valores cuando cambia editingEntry
+watch(
+  () => props.editingEntry,
+  (newValue) => {
+    if (newValue) {
+      weight.value = newValue.value
+      date.value = newValue.date
+        ? newValue.date.split('T')[0]
+        : new Date().toISOString().slice(0, 10)
+      time.value = newValue.date
+        ? newValue.date.split('T')[1].slice(0, 5)
+        : new Date().toTimeString().slice(0, 5)
+    } else {
+      weight.value = null
+      date.value = new Date().toISOString().slice(0, 10)
+      time.value = new Date().toTimeString().slice(0, 5)
+    }
+  },
+  { immediate: true },
+)
+
+async function handleSubmit() {
+  if (!weight.value || !date.value || !time.value) {
+    errorMessage.value = 'Please enter a valid weight, date, and time.'
     return
   }
 
@@ -21,30 +49,46 @@ async function registerWeight() {
   errorMessage.value = ''
 
   try {
-    await addWeight({ value: weight.value, date: date.value }) // Usamos el composable
-    weight.value = null
-    date.value = new Date().toISOString().slice(0, 10) // Resetear fecha a hoy
+    const formattedDateTime = `${date.value}T${time.value}:00`
+
+    if (props.editingEntry) {
+      await editWeight(props.editingEntry.id, {
+        value: parseFloat(weight.value),
+        date: formattedDateTime,
+      })
+    } else {
+      await addWeight({
+        value: parseFloat(weight.value),
+        date: formattedDateTime,
+      })
+    }
     closeModal()
   } catch (error) {
-    errorMessage.value = 'Failed to register weight. Try again.'
+    errorMessage.value = 'Failed to save weight. Try again.'
     console.error(error)
   } finally {
     loading.value = false
+    fetchWeights()
   }
 }
 
-// 🔹 Abrir el modal
 function openModal() {
   if (dialogRef.value) {
+    resetModal()
     dialogRef.value.showModal()
   }
 }
 
-// 🔹 Cerrar el modal
 function closeModal() {
   if (dialogRef.value) {
     dialogRef.value.close()
   }
+}
+
+function resetModal() {
+  weight.value = null
+  date.value = new Date().toISOString().slice(0, 10)
+  time.value = new Date().toTimeString().slice(0, 5)
 }
 
 defineExpose({
@@ -55,9 +99,9 @@ defineExpose({
 
 <template>
   <dialog ref="dialogRef" class="modal w-md bg-white p-8 shadow mx-auto mt-8" @close="closeModal">
-    <form class="modal-box w-full max-w-md" @submit.prevent="registerWeight">
+    <form class="modal-box w-full max-w-md" @submit.prevent="handleSubmit">
       <div class="modal-header">
-        <h3 class="text-lg font-bold">Register Weight</h3>
+        <h3 class="text-lg font-bold">{{ editingEntry ? 'Edit Weight' : 'Register Weight' }}</h3>
         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="closeModal">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -93,6 +137,11 @@ defineExpose({
         </label>
         <input id="date" v-model="date" type="date" class="input input-bordered w-full" required />
 
+        <label for="time" class="label mt-4">
+          <span class="label-text">Time</span>
+        </label>
+        <input id="time" v-model="time" type="time" class="input input-bordered w-full" required />
+
         <p v-if="errorMessage" class="text-red-500 text-sm mt-2">{{ errorMessage }}</p>
       </div>
 
@@ -102,7 +151,7 @@ defineExpose({
           type="submit"
           :disabled="loading"
         >
-          {{ loading ? 'Saving...' : 'Register' }}
+          {{ loading ? 'Saving...' : editingEntry ? 'Save' : 'Register' }}
         </button>
       </div>
     </form>

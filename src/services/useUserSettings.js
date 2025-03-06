@@ -6,10 +6,9 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
 export function useUserSettings() {
-  const { user } = useAuth(); // Get user from useAuth
+  const { user } = useAuth();
   const settings = ref({});
 
-  // 🔹 Fetch settings when user is available
   const fetchSettings = async () => {
     if (!user.value) return;
 
@@ -24,17 +23,15 @@ export function useUserSettings() {
       return;
     }
 
-    settings.value = data || {}; // Avoid undefined in bindings
+    settings.value = data || {};
   };
 
-  // 🔹 Watch for changes in `user` and fetch settings when it becomes available
   watch(user, async (newUser) => {
     if (newUser) {
       await fetchSettings();
     }
   });
 
-  // 🔹 Update user settings
   const updateSettings = async (newSettings) => {
     if (!user.value) return;
 
@@ -48,7 +45,7 @@ export function useUserSettings() {
       return;
     }
 
-    await fetchSettings(); // Refresh settings after update
+    await fetchSettings();
   };
 
   return {

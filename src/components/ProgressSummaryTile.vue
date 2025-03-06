@@ -1,21 +1,22 @@
 <script setup>
 import { computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import BaseTile from './BaseTile.vue'
-import { useWeight } from '@/services/useWeightTracker'
+import { useWeightStore } from '@/services/useWeightTracker'
 
-const { weights, fetchWeights } = useWeight()
+const weightStore = useWeightStore()
+const { weights } = storeToRefs(weightStore)
+const { fetchWeights } = weightStore
 
 onMounted(async () => {
-  await fetchWeights() // Asegurar que se ejecuta correctamente
+  await fetchWeights()
 })
 
-// 📌 Computed para obtener valores de peso
 const lastWeight = computed(() => (weights.value.length ? weights.value[0].weight : 'No data'))
 const previousWeight = computed(() =>
   weights.value.length > 1 ? weights.value[1].weight : 'No data',
 )
 
-// 📌 Calcular el peso promedio de los últimos `n` días
 const averageWeight = computed(() => {
   const last10Weights = weights.value.slice(0, 10).map((w) => w.weight)
   if (!last10Weights.length) return 'No data'
