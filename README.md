@@ -34,6 +34,8 @@ cd zen-weight
 npm install
 ```
 
+--
+
 3. Create a `.env` file in the root directory with your Supabase credentials:
 
 ```env
