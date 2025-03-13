@@ -5,6 +5,8 @@ import HomeView from '../views/HomeView.vue';
 import ConfigurationView from '../views/configuration/ConfigurationView.vue';
 import LoginView from '@/views/LoginView.vue';
 import RegisterView from '@/views/RegisterView.vue';
+import LostPasswordView from '@/views/LostPasswordView.vue';
+import ResetPassword from '@/views/ResetPassword.vue'
 
 const routes = [
   {
@@ -23,6 +25,16 @@ const routes = [
     path: '/register',
     name: 'register',
     component: RegisterView
+  },
+  {
+    path: '/lost-password',
+    name: 'lost-password',
+    component: LostPasswordView
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: ResetPassword
   },
   {
     path: '/app',

@@ -28,7 +28,7 @@ export function useAuth() {
 
   // 🔹 Iniciar sesión con email
   const login = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     await checkSession();
   };
@@ -41,9 +41,26 @@ export function useAuth() {
 
   // 🔹 Registrar usuario
   const registerUser = async (email, password) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
     await checkSession();
+  };
+
+  // 🔹 Reset password
+  const resetPassword = async (email) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`
+    });
+    if (error) throw error;
+  };
+
+  // 🔹 Update password with access token
+  const updatePassword = async (newPassword, accessToken) => {
+    const { error } = await supabase.auth.updateUser(
+      { password: newPassword },
+      { accessToken: accessToken }
+    )
+    if (error) throw error;
   };
 
   // 🔹 Restaurar sesión al cargar la app
@@ -57,6 +74,8 @@ export function useAuth() {
     login,
     logout,
     registerUser,
+    resetPassword,
+    updatePassword,
     checkSession,
   };
 }

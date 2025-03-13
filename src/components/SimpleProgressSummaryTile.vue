@@ -12,8 +12,8 @@ console.log(trackingStrategy)
     <div>
       <!-- Current Weight -->
       <div class="flex flex-col items-center">
-        <div class="text-xl font-bold">
-          {{ currentWeight !== null ? currentWeight.toFixed(2) : 'No data' }}
+        <div class="text-4xl font-bold text-slate-700 mb-2">
+          {{ currentWeight !== null ? currentWeight.toFixed(2) + ' kg' : 'No data' }}
         </div>
         <div class="text-sm">
           Current Weight

@@ -1,8 +1,8 @@
 <template>
   <div class="flex flex-col items-center h-screen pt-16 md:pt-32 px-4">
-    <div>
-      <div class="text-4xl md:text-6xl font-bold mb-16">Zen Weight</div>
-      <form @submit.prevent="handleLogin">
+    <div class="w-full md:w-[400px]">
+      <div class="text-3xl md:text-5xl mb-8 text-center font-light">zen weight</div>
+      <form @submit.prevent="handleLogin" class="bg-white p-8 rounded-xl shadow w-full">
         <div class="mb-2">
           <input
             id="email"
@@ -27,16 +27,22 @@
         <div>
           <button
             type="submit"
-            class="btn btn-primary w-full bg-blue-500 hover:bg-blue-600 cursor-pointer rounded-xl text-white py-2 px-4 shadow"
+            class="btn btn-primary w-full bg-slate-500 hover:bg-slate-600 cursor-pointer rounded-xl text-white py-2 px-4 shadow"
             :disabled="loading"
           >
             {{ loading ? 'Logging in...' : 'Login' }}
           </button>
         </div>
       </form>
+      <div class="text-center mt-4">
+        <router-link to="/lost-password" class="text-sm text-gray-500 hover:text-gray-700">
+          Forgot your password?
+        </router-link>
+      </div>
+      <hr class="my-4 text-gray-200 w-1/2 mx-auto" />
       <p class="mt-4 text-sm text-center">
         Don't have an account?
-        <router-link to="/register" class="text-blue-500 hover:underline">Register</router-link>
+        <router-link to="/register" class="text-slate-700 underline">Register</router-link>
       </p>
     </div>
   </div>

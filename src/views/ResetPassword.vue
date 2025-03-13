@@ -2,24 +2,14 @@
   <div class="flex flex-col items-center h-screen pt-16 md:pt-32 px-4">
     <div class="w-full md:w-[400px]">
       <div class="text-3xl md:text-5xl mb-8 text-center font-light">zen weight</div>
-      <form @submit.prevent="handleRegister" class="bg-white p-8 rounded-xl shadow w-full">
-        <div class="mb-2">
-          <input
-            id="email"
-            v-model="email"
-            type="email"
-            class="input input-bordered w-full border-1 border-gray-300 p-2 rounded-xl"
-            placeholder="Email"
-            required
-          />
-        </div>
+      <form @submit.prevent="handlePasswordReset" class="bg-white p-8 rounded-xl shadow w-full">
         <div class="mb-4">
           <input
             id="password"
             v-model="password"
             type="password"
             class="input input-bordered w-full border-1 border-gray-300 p-2 rounded-xl"
-            placeholder="Password"
+            placeholder="New Password"
             required
           />
         </div>
@@ -29,46 +19,45 @@
             v-model="confirmPassword"
             type="password"
             class="input input-bordered w-full border-1 border-gray-300 p-2 rounded-xl"
-            placeholder="Confirm Password"
+            placeholder="Confirm New Password"
             required
           />
         </div>
         <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
+        <div v-if="successMessage" class="text-green-500 mb-4">{{ successMessage }}</div>
         <div>
           <button
             type="submit"
             class="btn btn-primary w-full bg-slate-500 hover:bg-slate-600 cursor-pointer rounded-xl text-white py-2 px-4 shadow"
             :disabled="loading"
           >
-            {{ loading ? 'Creating Account...' : 'Register' }}
+            {{ loading ? 'Updating...' : 'Update Password' }}
           </button>
         </div>
       </form>
-      <p class="mt-6 text-sm text-center">
-        Already have an account?
-        <router-link to="/login" class="text-slate-700 underline">Login</router-link>
-      </p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
 import { useAuth } from '@/services/useAuth'
+import { useRouter, useRoute } from 'vue-router'
 
-const { registerUser } = useAuth()
+const { updatePassword } = useAuth()
 const router = useRouter()
+const route = useRoute()
 
-const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const errorMessage = ref('')
+const successMessage = ref('')
 const loading = ref(false)
+const accessToken = ref(null)
 
-// 🔹 Manejo del registro
-const handleRegister = async () => {
+const handlePasswordReset = async () => {
   errorMessage.value = ''
+  successMessage.value = ''
   loading.value = true
 
   if (password.value !== confirmPassword.value) {
@@ -78,13 +67,27 @@ const handleRegister = async () => {
   }
 
   try {
-    await registerUser(email.value, password.value)
-    router.push('/app')
+    await updatePassword(password.value, accessToken.value)
+    successMessage.value = 'Password updated successfully'
+    setTimeout(() => {
+      router.push('/login')
+    }, 2000)
   } catch (error) {
-    errorMessage.value = 'Error creating account'
+    errorMessage.value = 'Error updating password. Please try again.'
     console.error(error)
   } finally {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  // Get the access token from URL parameters
+  const hashParams = new URLSearchParams(window.location.hash.substring(1))
+  accessToken.value = hashParams.get('access_token')
+
+  if (!accessToken.value) {
+    errorMessage.value = 'Invalid reset link'
+    router.push('/login')
+  }
+})
 </script>
