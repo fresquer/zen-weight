@@ -1,3 +1,11 @@
 @import 'tailwindcss';
 
 @import './base.css';
+
+@theme {
+  --font-default: 'Source Code Pro', sans-serif;
+}
+
+* {
+  font-family: var(--font-default);
+}

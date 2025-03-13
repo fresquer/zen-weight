@@ -47,7 +47,7 @@ const handleDelete = async (id) => {
 
 <template>
   <BaseTile>
-    Log History
+    <div class="text-lg font-semibold mb-2">Register history</div>
 
     <div class="flex flex-col space-y-2">
       <div v-for="entry in list" :key="entry.date" class="flex justify-between items-center">

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { createClient } from '@supabase/supabase-js';
 import { useAuth } from '@/services/useAuth';
 
@@ -96,6 +96,10 @@ export const useWeightStore = defineStore('weightStore', () => {
     await fetchWeights();
   };
 
+  const lastRegister = computed(() => {
+    return weights.value[0];
+  });
+
   return {
     weights,
     goals,
@@ -104,6 +108,7 @@ export const useWeightStore = defineStore('weightStore', () => {
     fetchGoals,
     setGoal,
     editWeight,
-    deleteWeight
+    deleteWeight,
+    lastRegister
   };
 });

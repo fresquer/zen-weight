@@ -1,8 +1,24 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useWeightStore } from '@/services/useWeightTracker'
 
-const { addWeight, editWeight, fetchWeights } = useWeightStore()
+const { addWeight, editWeight, fetchWeights, lastRegister } = useWeightStore()
+
+onMounted(async () => {
+  try {
+    await fetchWeights()
+  } catch (error) {
+    console.error('Error loading initial weights:', error)
+  }
+})
+
+watch(lastRegister, (newValue) => {
+  console.log('🚀 ~ watch ~ newValue:', newValue)
+  if (newValue) {
+    weight.value = newValue.weight
+  }
+  console.log('🚀 ~ lastRegister:', lastRegister.value)
+})
 
 const props = defineProps({
   editingEntry: {
@@ -11,7 +27,7 @@ const props = defineProps({
   },
 })
 
-const weight = ref(null)
+const weight = ref(lastRegister)
 const date = ref(new Date().toISOString().slice(0, 10))
 const time = ref(new Date().toTimeString().slice(0, 5))
 const dialogRef = ref(null)
@@ -98,60 +114,72 @@ defineExpose({
 </script>
 
 <template>
-  <dialog ref="dialogRef" class="modal w-md bg-white p-8 shadow mx-auto mt-8" @close="closeModal">
-    <form class="modal-box w-full max-w-md" @submit.prevent="handleSubmit">
-      <div class="modal-header">
-        <h3 class="text-lg font-bold">{{ editingEntry ? 'Edit Weight' : 'Register Weight' }}</h3>
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="closeModal">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-              clip-rule="evenodd"
+  <dialog
+    ref="dialogRef"
+    class="modal w-md bg-white p-8 shadow mx-auto mt-8"
+    @close="closeModal"
+    @click="(e) => e.target === dialogRef && closeModal()"
+  >
+    <form class="modal-box w-full max-w-md" @submit.prevent="handleSubmit" @click.stop>
+      <div class="modal-body space-y-4 mb-6">
+        <div>
+          <label for="weight" class="label">
+            <span class="label-text">Weight</span>
+          </label>
+          <input
+            id="weight"
+            v-model="weight"
+            type="number"
+            step="0.1"
+            class="input input-bordered w-full"
+            placeholder="Weight"
+            required
+          />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="date" class="label mt-4">
+              <span class="label-text">Date</span>
+            </label>
+            <input
+              id="date"
+              v-model="date"
+              type="date"
+              class="input input-bordered w-full"
+              required
             />
-          </svg>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <label for="weight" class="label">
-          <span class="label-text">Weight</span>
-        </label>
-        <input
-          id="weight"
-          v-model="weight"
-          type="number"
-          step="0.1"
-          class="input input-bordered w-full"
-          placeholder="Weight"
-          required
-        />
-
-        <label for="date" class="label mt-4">
-          <span class="label-text">Date</span>
-        </label>
-        <input id="date" v-model="date" type="date" class="input input-bordered w-full" required />
-
-        <label for="time" class="label mt-4">
-          <span class="label-text">Time</span>
-        </label>
-        <input id="time" v-model="time" type="time" class="input input-bordered w-full" required />
-
+          </div>
+          <div>
+            <label for="time" class="label mt-4">
+              <span class="label-text">Time</span>
+            </label>
+            <input
+              id="time"
+              v-model="time"
+              type="time"
+              class="input input-bordered w-full"
+              required
+            />
+          </div>
+        </div>
         <p v-if="errorMessage" class="text-red-500 text-sm mt-2">{{ errorMessage }}</p>
       </div>
 
-      <div class="modal-footer mt-4">
+      <div class="modal-footer mt-4 grid grid-cols-2 gap-4">
         <button
-          class="btn btn-primary cursor-pointer px-8 py-1 bg-amber-400"
+          class="block cursor-pointer text-sm text-slate-600"
+          type="submit"
+          :disabled="loading"
+          @click="closeModal"
+        >
+          Cancel
+        </button>
+        <button
+          class="block btn-primary cursor-pointer px-8 py-1 bg-slate-700 text-sm text-slate-100 rounded-full"
           type="submit"
           :disabled="loading"
         >
-          {{ loading ? 'Saving...' : editingEntry ? 'Save' : 'Register' }}
+          {{ loading ? 'Saving...' : editingEntry ? 'Update register' : 'Add register' }}
         </button>
       </div>
     </form>

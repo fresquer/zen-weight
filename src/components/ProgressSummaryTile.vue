@@ -1,56 +1,64 @@
 <script setup>
-import { computed, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
 import BaseTile from './BaseTile.vue'
-import { useWeightStore } from '@/services/useWeightTracker'
+import { useGoalProgress } from '@/services/useGoalProgress'
 
-const weightStore = useWeightStore()
-const { weights } = storeToRefs(weightStore)
-const { fetchWeights } = weightStore
+const {
+  currentWeight,
+  goalWeightStep,
+  stepsCompleted,
+  totalSteps,
+  stepCompletionPercentage,
+  trackingStrategy,
+} = useGoalProgress()
 
-onMounted(async () => {
-  await fetchWeights()
-})
-
-const lastWeight = computed(() => (weights.value.length ? weights.value[0].weight : 'No data'))
-const previousWeight = computed(() =>
-  weights.value.length > 1 ? weights.value[1].weight : 'No data',
-)
-
-const averageWeight = computed(() => {
-  const last10Weights = weights.value.slice(0, 10).map((w) => w.weight)
-  if (!last10Weights.length) return 'No data'
-
-  const avg = last10Weights.reduce((acc, w) => acc + w, 0) / last10Weights.length
-  return avg.toFixed(2)
-})
+console.log(trackingStrategy)
 </script>
 
 <template>
   <BaseTile>
     <div>
-      <!-- Last weight -->
+      <!-- Current Weight -->
       <div class="flex flex-col items-center">
         <div class="text-xl font-bold">
-          {{ lastWeight }}
+          {{ currentWeight !== null ? currentWeight.toFixed(2) : 'No data' }}
         </div>
-        <div class="text-sm">Last weight</div>
+        <div class="text-sm">
+          Current Weight
+          <span class="text-gray-500 text-xs" v-if="trackingStrategy === 'moving_average'">
+            (Moving Average)</span
+          >
+        </div>
+      </div>
+      <div class="flex gap-8 justify-between mt-8 mb-4">
+        <!-- Goal Weight Step -->
+        <div class="flex flex-col items-center w-32">
+          <div class="text-xl font-bold">
+            {{ goalWeightStep !== null ? goalWeightStep.toFixed(2) : 'No data' }}
+          </div>
+          <div class="text-sm">Goal Weight Step</div>
+        </div>
+
+        <!-- Steps Completed -->
+        <div class="flex flex-col items-center w-32">
+          <div class="text-xl font-bold">{{ stepsCompleted }} / {{ totalSteps }}</div>
+          <div class="text-sm">Steps Completed</div>
+        </div>
+
+        <!-- Completion Percentage -->
+        <div class="flex flex-col items-center w-32">
+          <div class="text-xl font-bold">{{ stepCompletionPercentage.toFixed(2) }}%</div>
+          <div class="text-sm">Completed</div>
+        </div>
       </div>
 
-      <!-- Previous weight -->
-      <div class="flex flex-col items-center">
-        <div class="text-xl font-bold">
-          {{ previousWeight }}
-        </div>
-        <div class="text-sm">Previous weight</div>
-      </div>
-
-      <!-- Average weight -->
-      <div class="flex flex-col items-center">
-        <div class="text-xl font-bold">
-          {{ averageWeight }}
-        </div>
-        <div class="text-sm">Average weight (10 days)</div>
+      <!-- Steps Visualization -->
+      <div class="flex gap-2 justify-center mt-8 mb-4">
+        <div
+          v-for="step in totalSteps"
+          :key="step"
+          class="w-3 h-3 rounded-full"
+          :class="step <= stepsCompleted ? 'bg-green-500' : 'bg-gray-300'"
+        ></div>
       </div>
     </div>
   </BaseTile>

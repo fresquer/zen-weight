@@ -6,6 +6,9 @@ export const useWeightStore = defineStore('weight', {
   }),
 
   getters: {
+    lastRegister: (state) => {
+      return state.weights.length > 0 ? state.weights[state.weights.length - 1] : null;
+    },
     lastWeight: (state) => {
       return state.weights.length ? state.weights[state.weights.length - 1].value : null;
     },
@@ -40,13 +43,44 @@ export const useWeightStore = defineStore('weight', {
   },
 
   actions: {
-    addWeight(value) {
+    async fetchWeights() {
+      // Por ahora retornamos los weights del state
+      // Aquí podrías agregar una llamada a API en el futuro
+      return this.weights;
+    },
+
+    async addWeight({ value, date }) {
       const newEntry = {
-        value,
-        date: new Date().toISOString() // Guarda la fecha actual
+        id: Date.now(), // Usar timestamp como ID simple
+        value: parseFloat(value),
+        date: date || new Date().toISOString()
       };
       this.weights.push(newEntry);
+      return newEntry;
     },
+
+    async editWeight(id, { value, date }) {
+      const index = this.weights.findIndex(w => w.id === id);
+      if (index !== -1) {
+        this.weights[index] = {
+          ...this.weights[index],
+          value: parseFloat(value),
+          date: date || this.weights[index].date
+        };
+        return this.weights[index];
+      }
+      throw new Error('Weight entry not found');
+    },
+
+    async deleteWeight(id) {
+      const index = this.weights.findIndex(w => w.id === id);
+      if (index !== -1) {
+        this.weights.splice(index, 1);
+        return true;
+      }
+      throw new Error('Weight entry not found');
+    },
+
     clearWeights() {
       this.weights = [];
     }
