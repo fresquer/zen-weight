@@ -49,7 +49,7 @@ const handleDelete = async (id) => {
   <BaseTile>
     <div class="text-lg font-semibold mb-2">Register history</div>
 
-    <div class="flex flex-col space-y-2">
+    <div class="flex flex-col space-y-2" v-if="list.length > 0">
       <div v-for="entry in list" :key="entry.date" class="flex justify-between items-center">
         <div>
           {{ formatDate(entry.date) }}
@@ -91,6 +91,12 @@ const handleDelete = async (id) => {
             </svg>
           </button>
         </div>
+      </div>
+    </div>
+    <div v-else>
+      <div class="text-center text-gray-400 my-16 px-4 md:px-16 text-sm">
+        Start your journey by adding your first weight register. It's the first step to tracking
+        your progress! ✨
       </div>
     </div>
 
