@@ -3,7 +3,7 @@
     <div class="w-full md:w-[400px]">
       <div class="text-3xl md:text-5xl mb-8 text-center font-light">zen weight</div>
       <form @submit.prevent="handleRegister" class="bg-white p-8 rounded-xl shadow w-full">
-        <div class="mb-2">
+        <div class="mb-4">
           <input
             id="email"
             v-model="email"
@@ -13,7 +13,7 @@
             required
           />
         </div>
-        <div class="mb-4">
+        <div class="mb-2">
           <input
             id="password"
             v-model="password"
@@ -70,6 +70,12 @@ const loading = ref(false)
 const handleRegister = async () => {
   errorMessage.value = ''
   loading.value = true
+
+  if (password.value.length < 6) {
+    errorMessage.value = 'Password must be at least 6 characters long'
+    loading.value = false
+    return
+  }
 
   if (password.value !== confirmPassword.value) {
     errorMessage.value = 'Passwords do not match'
