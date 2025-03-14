@@ -12,17 +12,29 @@ const props = defineProps({
   },
 })
 
-const weight = ref(lastRegister)
+const weight = ref(null)
 const date = ref(new Date().toISOString().slice(0, 10))
 const time = ref(new Date().toTimeString().slice(0, 5))
 const dialogRef = ref(null)
 const loading = ref(false)
 const errorMessage = ref('')
+const lastWeight = ref(null)
 
-// Watch para actualizar los valores cuando cambia editingEntry
+onMounted(async () => {
+  try {
+    const lastWeightData = await lastRegister()
+    lastWeight.value = lastWeightData
+    if (lastWeightData.value && !props.editingEntry) {
+      weight.value = lastWeightData.weight
+    }
+  } catch (error) {
+    console.error('Error fetching last weight:', error)
+  }
+})
+
 watch(
   () => props.editingEntry,
-  (newValue) => {
+  async (newValue) => {
     if (newValue) {
       weight.value = newValue.value
       date.value = newValue.date
@@ -32,7 +44,13 @@ watch(
         ? newValue.date.split('T')[1].slice(0, 5)
         : new Date().toTimeString().slice(0, 5)
     } else {
-      weight.value = null
+      try {
+        const lastWeight = await lastRegister()
+        weight.value = lastWeight ? lastWeight.weight : null
+      } catch (error) {
+        console.error('Error fetching last weight:', error)
+        weight.value = null
+      }
       date.value = new Date().toISOString().slice(0, 10)
       time.value = new Date().toTimeString().slice(0, 5)
     }
@@ -73,9 +91,19 @@ async function handleSubmit() {
   }
 }
 
-function openModal() {
+async function openModal() {
   if (dialogRef.value) {
     resetModal()
+    if (!props.editingEntry) {
+      try {
+        const lastWeightData = await lastRegister()
+        if (lastWeightData) {
+          weight.value = lastWeightData.weight
+        }
+      } catch (error) {
+        console.error('Error fetching last weight:', error)
+      }
+    }
     dialogRef.value.showModal()
   }
 }

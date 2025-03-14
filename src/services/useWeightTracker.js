@@ -96,9 +96,17 @@ export const useWeightStore = defineStore('weightStore', () => {
     await fetchWeights();
   };
 
-  const lastRegister = computed(() => {
-    return weights.value[0];
-  });
+  const lastRegister = async () => {
+    await userReady;
+    const { data } = await supabase
+      .from('weights')
+      .select('*')
+      .eq('user_id', user.value.id)
+      .order('date', { ascending: false })
+      .limit(1)
+      .single();
+    return data;
+  };
 
   return {
     weights,
