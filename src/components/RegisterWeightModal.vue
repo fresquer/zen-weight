@@ -2,23 +2,8 @@
 import { ref, watch, onMounted } from 'vue'
 import { useWeightStore } from '@/services/useWeightTracker'
 
-const { addWeight, editWeight, fetchWeights, lastRegister } = useWeightStore()
-
-onMounted(async () => {
-  try {
-    await fetchWeights()
-  } catch (error) {
-    console.error('Error loading initial weights:', error)
-  }
-})
-
-watch(lastRegister, (newValue) => {
-  console.log('🚀 ~ watch ~ newValue:', newValue)
-  if (newValue) {
-    weight.value = newValue.weight
-  }
-  console.log('🚀 ~ lastRegister:', lastRegister.value)
-})
+const weightStore = useWeightStore()
+const { addWeight, editWeight, fetchWeights, lastRegister } = weightStore
 
 const props = defineProps({
   editingEntry: {
@@ -27,17 +12,29 @@ const props = defineProps({
   },
 })
 
-const weight = ref(lastRegister)
+const weight = ref(null)
 const date = ref(new Date().toISOString().slice(0, 10))
 const time = ref(new Date().toTimeString().slice(0, 5))
 const dialogRef = ref(null)
 const loading = ref(false)
 const errorMessage = ref('')
+const lastWeight = ref(null)
 
-// Watch para actualizar los valores cuando cambia editingEntry
+onMounted(async () => {
+  try {
+    const lastWeightData = await lastRegister()
+    lastWeight.value = lastWeightData
+    if (lastWeightData.value && !props.editingEntry) {
+      weight.value = lastWeightData.weight
+    }
+  } catch (error) {
+    console.error('Error fetching last weight:', error)
+  }
+})
+
 watch(
   () => props.editingEntry,
-  (newValue) => {
+  async (newValue) => {
     if (newValue) {
       weight.value = newValue.value
       date.value = newValue.date
@@ -47,7 +44,13 @@ watch(
         ? newValue.date.split('T')[1].slice(0, 5)
         : new Date().toTimeString().slice(0, 5)
     } else {
-      weight.value = null
+      try {
+        const lastWeight = await lastRegister()
+        weight.value = lastWeight ? lastWeight.weight : null
+      } catch (error) {
+        console.error('Error fetching last weight:', error)
+        weight.value = null
+      }
       date.value = new Date().toISOString().slice(0, 10)
       time.value = new Date().toTimeString().slice(0, 5)
     }
@@ -88,9 +91,19 @@ async function handleSubmit() {
   }
 }
 
-function openModal() {
+async function openModal() {
   if (dialogRef.value) {
     resetModal()
+    if (!props.editingEntry) {
+      try {
+        const lastWeightData = await lastRegister()
+        if (lastWeightData) {
+          weight.value = lastWeightData.weight
+        }
+      } catch (error) {
+        console.error('Error fetching last weight:', error)
+      }
+    }
     dialogRef.value.showModal()
   }
 }
@@ -122,42 +135,46 @@ defineExpose({
   >
     <form class="modal-box w-full max-w-md" @submit.prevent="handleSubmit" @click.stop>
       <div class="modal-body space-y-4 mb-6">
-        <div>
+        <div class="border-b border-slate-200 pb-1">
           <label for="weight" class="label">
-            <span class="label-text">Weight</span>
+            <span class="label-text text-slate-500">Weight</span>
           </label>
-          <input
-            id="weight"
-            v-model="weight"
-            type="number"
-            step="0.1"
-            class="input input-bordered w-full"
-            placeholder="Weight"
-            required
-          />
+          <div class="flex items-center">
+            <input
+              id="weight"
+              v-model="weight"
+              type="number"
+              step="0.1"
+              min="0"
+              class="input input-bordered w-full focus:outline-none text-3xl pr-12"
+              placeholder="Weight"
+              required
+            />
+            <span class="text-slate-500 text-2xl -ml-10">kg</span>
+          </div>
         </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
+        <div class="grid grid-cols-2 gap-8">
+          <div class="border-b border-slate-200 pb-1">
             <label for="date" class="label mt-4">
-              <span class="label-text">Date</span>
+              <span class="label-text text-slate-500">Date</span>
             </label>
             <input
               id="date"
               v-model="date"
               type="date"
-              class="input input-bordered w-full"
+              class="input input-bordered w-full focus:outline-none"
               required
             />
           </div>
-          <div>
+          <div class="border-b border-slate-200 pb-1">
             <label for="time" class="label mt-4">
-              <span class="label-text">Time</span>
+              <span class="label-text text-slate-500">Time</span>
             </label>
             <input
               id="time"
               v-model="time"
               type="time"
-              class="input input-bordered w-full"
+              class="input input-bordered w-full focus:outline-none"
               required
             />
           </div>
@@ -175,7 +192,7 @@ defineExpose({
           Cancel
         </button>
         <button
-          class="block btn-primary cursor-pointer px-8 py-1 bg-slate-700 text-sm text-slate-100 rounded-full"
+          class="block btn-primary cursor-pointer px-8 py-2 bg-slate-700 hover:bg-slate-800 text-sm text-slate-100 rounded-full whitespace-nowrap"
           type="submit"
           :disabled="loading"
         >

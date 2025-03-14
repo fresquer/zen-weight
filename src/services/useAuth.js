@@ -1,5 +1,6 @@
 import { onMounted, ref } from 'vue';
 import { createClient } from '@supabase/supabase-js';
+import { useRouter } from 'vue-router';
 
 // 🔗 Configuración de Supabase
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
@@ -9,6 +10,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 export function useAuth() {
   const user = ref(null);
   const isAuthenticated = ref(false);
+  const router = useRouter();
 
   // 🔹 Obtener sesión activa desde Supabase
   const checkSession = async () => {
@@ -37,6 +39,7 @@ export function useAuth() {
   const logout = async () => {
     await supabase.auth.signOut();
     await checkSession();
+    router.push('/login');
   };
 
   // 🔹 Registrar usuario
