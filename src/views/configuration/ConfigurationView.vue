@@ -14,9 +14,7 @@ onMounted(fetchSettings)
       &larr; Back
     </router-link>
     <h1 class="text-2xl font-bold">Configuration</h1>
-    <BasicConfiguration :settings="settings" />
-    <!--
     <ProgressGoalConfiguration :settings="settings" />
-    -->
+    <BasicConfiguration :settings="settings" />
   </div>
 </template>

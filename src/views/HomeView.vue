@@ -1,14 +1,30 @@
 <script setup>
 import LogHistoryTile from '@/components/LogHistoryTile.vue'
-// import ProgressSummaryTile from '../components/ProgressSummaryTile.vue'
+import ProgressSummaryTile from '../components/ProgressSummaryTile.vue'
 import SimpleProgressSummaryTile from '@/components/SimpleProgressSummaryTile.vue'
+
+import { useUserSettings } from '@/services/useUserSettings'
+import { computed, onMounted } from 'vue'
+const { settings, fetchSettings } = useUserSettings()
+
+onMounted(fetchSettings)
+
+const isGoalSettingEnabled = computed(() => {
+  console.log('isGoalSettingEnabled', settings.value)
+  return (
+    settings.value.target_weight !== null &&
+    settings.value.starting_weight !== null &&
+    settings.value.target_weight > 0 &&
+    settings.value.starting_weight > 0
+  )
+})
 </script>
 
 <template>
   <div>
-    <SimpleProgressSummaryTile></SimpleProgressSummaryTile>
-    <!-- <ProgressSummaryTile /> -->
-    <div class="h-8"></div>
+    <ProgressSummaryTile v-if="isGoalSettingEnabled" />
+    <SimpleProgressSummaryTile v-else />
+    <div class="h-4"></div>
     <LogHistoryTile />
     <div class="flex justify-center mt-4 py-4">
       <RouterLink to="/app/configuration" class="flex items-center gap-2 text-gray-500">
