@@ -2,6 +2,7 @@
 import LogHistoryTile from '@/components/LogHistoryTile.vue'
 import ProgressSummaryTile from '../components/ProgressSummaryTile.vue'
 import SimpleProgressSummaryTile from '@/components/SimpleProgressSummaryTile.vue'
+import ProgressChartTile from '@/components/ProgressChartTile.vue'
 
 import { useUserSettings } from '@/services/useUserSettings'
 import { computed, onMounted } from 'vue'
@@ -24,6 +25,8 @@ const isGoalSettingEnabled = computed(() => {
   <div>
     <ProgressSummaryTile v-if="isGoalSettingEnabled" />
     <SimpleProgressSummaryTile v-else />
+    <div class="h-4"></div>
+    <ProgressChartTile />
     <div class="h-4"></div>
     <LogHistoryTile />
     <div class="flex justify-center mt-4 py-4">

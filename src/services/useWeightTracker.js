@@ -108,10 +108,37 @@ export const useWeightStore = defineStore('weightStore', () => {
     return data;
   };
 
+  const fetchWeightsByRange = async (range) => {
+    await userReady;
+
+    const endDate = new Date();
+    let startDate = new Date();
+
+    if (range === '1w') startDate.setDate(endDate.getDate() - 7);
+    else if (range === '1m') startDate.setMonth(endDate.getMonth() - 1);
+    else if (range === '1y') startDate.setFullYear(endDate.getFullYear() - 1);
+
+    const { data, error } = await supabase
+      .from('weights')
+      .select('*')
+      .eq('user_id', user.value.id)
+      .gte('date', startDate.toISOString())
+      .order('date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching weights by range:', error);
+      throw error;
+    }
+
+    return data || [];
+  };
+
+
   return {
     weights,
     goals,
     fetchWeights,
+    fetchWeightsByRange,
     addWeight,
     fetchGoals,
     setGoal,
