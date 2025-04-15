@@ -32,7 +32,7 @@ const fetchData = async () => {
     data.push(copy)
   }
 
-  chartDataPoints.value = data.map(entry => ({
+  chartDataPoints.value = data.map((entry) => ({
     date: entry.date,
     value: entry.weight,
   }))
@@ -42,10 +42,10 @@ onMounted(fetchData)
 watch(timeRange, fetchData)
 
 const chartData = computed(() => ({
-  labels: chartDataPoints.value.map(item => item.date), // labels ocultas
+  labels: chartDataPoints.value.map((item) => item.date), // labels ocultas
   datasets: [
     {
-      data: chartDataPoints.value.map(item => item.value),
+      data: chartDataPoints.value.map((item) => item.value),
       borderColor: '#7ccf00',
       backgroundColor: 'transparent',
       tension: 0.3,
@@ -93,11 +93,7 @@ const chartOptions = {
     </div>
 
     <div v-else class="h-48 w-full">
-      <Line
-        :data="chartData"
-        :options="chartOptions"
-        class="w-full"
-      />
+      <Line :data="chartData" :options="chartOptions" class="w-full" />
     </div>
   </BaseTile>
 </template>

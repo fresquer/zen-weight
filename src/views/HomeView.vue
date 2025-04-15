@@ -3,6 +3,7 @@ import LogHistoryTile from '@/components/LogHistoryTile.vue'
 import ProgressSummaryTile from '../components/ProgressSummaryTile.vue'
 import SimpleProgressSummaryTile from '@/components/SimpleProgressSummaryTile.vue'
 import ProgressChartTile from '@/components/ProgressChartTile.vue'
+import BaseTile from '@/components/BaseTile.vue'
 
 import { useUserSettings } from '@/services/useUserSettings'
 import { computed, onMounted } from 'vue'
@@ -28,7 +29,24 @@ const isGoalSettingEnabled = computed(() => {
     <div class="h-4"></div>
     <ProgressChartTile />
     <div class="h-4"></div>
-    <LogHistoryTile />
+    <BaseTile>
+      <router-link to="/app/registers" class="text-gray-600 hover:text-gray-800 block font-semibold text-center flex items-center justify-center gap-2">
+        <!-- data icon -->
+        <svg class="text-gray-300" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="3" y="4" width="18" height="4" rx="1" fill="currentColor"/>
+  <rect x="3" y="10" width="18" height="4" rx="1" fill="currentColor"/>
+  <rect x="3" y="16" width="18" height="4" rx="1" fill="currentColor"/>
+  <circle cx="6" cy="8" r="1" fill="white"/>
+  <circle cx="6" cy="14" r="1" fill="white"/>
+  <circle cx="6" cy="20" r="1" fill="white"/>
+</svg>
+
+
+<p>
+  My weight registers
+</p>
+      </router-link>
+    </BaseTile>
     <div class="flex justify-center mt-4 py-4">
       <RouterLink to="/app/configuration" class="flex items-center gap-2 text-gray-500">
         <!-- Gear Icon --->
