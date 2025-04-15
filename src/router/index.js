@@ -1,40 +1,40 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import { useAuth } from '@/services/useAuth'; // Importamos el composable de autenticación
-import AppLayout from '../layouts/AppLayout.vue';
-import HomeView from '../views/HomeView.vue';
-import ConfigurationView from '../views/configuration/ConfigurationView.vue';
-import LoginView from '@/views/LoginView.vue';
-import RegisterView from '@/views/RegisterView.vue';
-import LostPasswordView from '@/views/LostPasswordView.vue';
+import { createRouter, createWebHistory } from 'vue-router'
+import { useAuth } from '@/services/useAuth' // Importamos el composable de autenticación
+import AppLayout from '../layouts/AppLayout.vue'
+import HomeView from '../views/HomeView.vue'
+import ConfigurationView from '../views/configuration/ConfigurationView.vue'
+import LoginView from '@/views/LoginView.vue'
+import RegisterView from '@/views/RegisterView.vue'
+import LostPasswordView from '@/views/LostPasswordView.vue'
 import ResetPassword from '@/views/ResetPassword.vue'
 
 const routes = [
   {
     path: '/',
     redirect: () => {
-      const { isAuthenticated } = useAuth();
-      return isAuthenticated.value ? '/app' : '/login';
-    }
+      const { isAuthenticated } = useAuth()
+      return isAuthenticated.value ? '/app' : '/login'
+    },
   },
   {
     path: '/login',
     name: 'login',
-    component: LoginView
+    component: LoginView,
   },
   {
     path: '/register',
     name: 'register',
-    component: RegisterView
+    component: RegisterView,
   },
   {
     path: '/lost-password',
     name: 'lost-password',
-    component: LostPasswordView
+    component: LostPasswordView,
   },
   {
     path: '/reset-password',
     name: 'reset-password',
-    component: ResetPassword
+    component: ResetPassword,
   },
   {
     path: '/app',
@@ -44,35 +44,40 @@ const routes = [
       {
         path: '',
         name: 'app',
-        component: HomeView
+        component: HomeView,
       },
       {
         path: 'configuration',
         name: 'configuration',
-        component: ConfigurationView
-      }
-    ]
-  }
-];
+        component: ConfigurationView,
+      },
+      {
+        path: 'registers',
+        name: 'registers',
+        component: () => import('@/views/registers/RegisterView.vue'),
+      },
+    ],
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
-});
+  routes,
+})
 
 // 🔹 Middleware para proteger rutas
 router.beforeEach((to, from, next) => {
-  const { isAuthenticated, checkSession } = useAuth();
+  const { isAuthenticated, checkSession } = useAuth()
 
   checkSession().then(() => {
-    if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated.value) {
-      next('/login');
+    if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated.value) {
+      next('/login')
     } else if ((to.path === '/login' || to.path === '/register') && isAuthenticated.value) {
-      next('/app');
+      next('/app')
     } else {
-      next();
+      next()
     }
-  });
-});
+  })
+})
 
-export default router;
+export default router
