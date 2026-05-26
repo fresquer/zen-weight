@@ -1,55 +1,61 @@
-import { onMounted, ref } from 'vue'
-import { createClient } from '@supabase/supabase-js'
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { supabase } from './supabaseClient'
 
-// 🔗 Configuración de Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+const user = ref(null)
+const isAuthenticated = ref(false)
+const isAuthReady = ref(false)
 
-export function useAuth() {
-  const user = ref(null)
-  const isAuthenticated = ref(false)
-  const router = useRouter()
+let sessionPromise = null
+let authListener = null
 
-  // 🔹 Obtener sesión activa desde Supabase
-  const checkSession = async () => {
-    const { data, error } = await supabase.auth.getSession()
-    if (error) {
-      console.error('Error fetching session:', error)
-      return
-    }
-    if (data.session) {
-      user.value = data.session.user
-      isAuthenticated.value = true
-    } else {
-      user.value = null
-      isAuthenticated.value = false
-    }
+const setSession = (session) => {
+  user.value = session?.user || null
+  isAuthenticated.value = Boolean(session?.user)
+}
+
+const checkSession = async () => {
+  const { data, error } = await supabase.auth.getSession()
+  if (error) throw error
+
+  setSession(data.session)
+  isAuthReady.value = true
+  return data.session
+}
+
+const initAuth = () => {
+  if (!sessionPromise) {
+    sessionPromise = checkSession()
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      isAuthReady.value = true
+    })
+
+    authListener = data.subscription
   }
 
-  // 🔹 Iniciar sesión con email
+  return sessionPromise
+}
+
+export function useAuth() {
   const login = async (email, password) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
     await checkSession()
   }
 
-  // 🔹 Cerrar sesión
   const logout = async () => {
-    await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
     await checkSession()
-    router.push('/login')
   }
 
-  // 🔹 Registrar usuario
   const registerUser = async (email, password) => {
     const { error } = await supabase.auth.signUp({ email, password })
     if (error) throw error
     await checkSession()
   }
 
-  // 🔹 Reset password
   const resetPassword = async (email) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -57,23 +63,17 @@ export function useAuth() {
     if (error) throw error
   }
 
-  // 🔹 Update password with access token
-  const updatePassword = async (newPassword, accessToken) => {
-    const { error } = await supabase.auth.updateUser(
-      { password: newPassword },
-      { accessToken: accessToken },
-    )
+  const updatePassword = async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
     if (error) throw error
   }
-
-  // 🔹 Restaurar sesión al cargar la app
-  onMounted(() => {
-    checkSession()
-  })
 
   return {
     user,
     isAuthenticated,
+    isAuthReady,
+    authListener,
+    initAuth,
     login,
     logout,
     registerUser,

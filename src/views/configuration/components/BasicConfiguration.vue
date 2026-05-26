@@ -1,11 +1,11 @@
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import BaseTile from '@/components/BaseTile.vue'
 import { useAuth } from '@/services/useAuth'
-import { useUserSettings } from '@/services/useUserSettings'
 
 const auth = useAuth()
-const { settings, updateSettings } = useUserSettings()
+const router = useRouter()
 
 const userEmail = computed(() => {
   return auth.user.value?.email || 'Unknown User'
@@ -15,8 +15,9 @@ onMounted(async () => {
   await auth.checkSession()
 })
 
-const logOut = () => {
-  auth.logout()
+const logOut = async () => {
+  await auth.logout()
+  router.push('/login')
 }
 </script>
 

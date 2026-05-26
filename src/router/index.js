@@ -66,18 +66,23 @@ const router = createRouter({
 })
 
 // 🔹 Middleware para proteger rutas
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to) => {
   const { isAuthenticated, checkSession } = useAuth()
 
-  checkSession().then(() => {
-    if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated.value) {
-      next('/login')
-    } else if ((to.path === '/login' || to.path === '/register') && isAuthenticated.value) {
-      next('/app')
-    } else {
-      next()
-    }
-  })
+  try {
+    await checkSession()
+  } catch (error) {
+    console.error('Error checking session:', error)
+    if (to.matched.some((record) => record.meta.requiresAuth)) return '/login'
+  }
+
+  if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated.value) {
+    return '/login'
+  }
+
+  if ((to.path === '/login' || to.path === '/register') && isAuthenticated.value) {
+    return '/app'
+  }
 })
 
 export default router

@@ -40,6 +40,7 @@ const fetchData = async () => {
 
 onMounted(fetchData)
 watch(timeRange, fetchData)
+watch(() => weightStore.weights.length, fetchData)
 
 const chartData = computed(() => ({
   labels: chartDataPoints.value.map((item) => item.date), // labels ocultas

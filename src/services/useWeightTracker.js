@@ -1,31 +1,33 @@
 import { defineStore } from 'pinia'
-import { ref, watch, computed } from 'vue'
-import { createClient } from '@supabase/supabase-js'
+import { ref, watch } from 'vue'
 import { useAuth } from '@/services/useAuth'
-
-const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_KEY)
+import { supabase } from '@/services/supabaseClient'
 
 export const useWeightStore = defineStore('weightStore', () => {
-  const { user } = useAuth()
+  const { user, checkSession } = useAuth()
 
   const weights = ref([])
   const goals = ref(null)
 
-  let resolveUserReady
-  const userReady = new Promise((resolve) => {
-    resolveUserReady = resolve
+  watch(user, (newUser) => {
+    if (!newUser) {
+      weights.value = []
+      goals.value = null
+    }
   })
 
-  watch(user, (newUser) => {
-    if (newUser) resolveUserReady()
-  })
+  const requireUser = async () => {
+    if (!user.value) await checkSession()
+    if (!user.value) throw new Error('Not authenticated')
+    return user.value
+  }
 
   const fetchWeights = async () => {
-    await userReady
+    const currentUser = await requireUser()
     const { data, error } = await supabase
       .from('weights')
       .select('*')
-      .eq('user_id', user.value.id)
+      .eq('user_id', currentUser.id)
       .order('date', { ascending: false })
 
     if (error) {
@@ -37,10 +39,10 @@ export const useWeightStore = defineStore('weightStore', () => {
   }
 
   const addWeight = async ({ value, date }) => {
-    await userReady
-    const { data, error } = await supabase
+    const currentUser = await requireUser()
+    const { error } = await supabase
       .from('weights')
-      .insert([{ user_id: user.value.id, weight: value, date }])
+      .insert([{ user_id: currentUser.id, weight: value, date }])
       .select()
 
     if (error) {
@@ -52,57 +54,80 @@ export const useWeightStore = defineStore('weightStore', () => {
   }
 
   const fetchGoals = async () => {
-    await userReady
-    const { data } = await supabase.from('goals').select('*').eq('user_id', user.value.id).single()
+    const currentUser = await requireUser()
+    const { data, error } = await supabase
+      .from('goals')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .maybeSingle()
+
+    if (error) throw error
+
     goals.value = data || null
   }
 
   const setGoal = async (startingWeight, targetWeight, steps = 5) => {
-    await userReady
-    await supabase.from('goals').insert([
+    const currentUser = await requireUser()
+    const { error } = await supabase.from('goals').insert([
       {
-        user_id: user.value.id,
+        user_id: currentUser.id,
         starting_weight: startingWeight,
         target_weight: targetWeight,
         steps,
       },
     ])
+
+    if (error) throw error
+
     await fetchGoals()
   }
 
   const editWeight = async (id, { value, date }) => {
-    await userReady
-    await supabase
+    const currentUser = await requireUser()
+    const { error } = await supabase
       .from('weights')
       .update({ weight: value, date })
       .eq('id', id)
-      .eq('user_id', user.value.id)
+      .eq('user_id', currentUser.id)
+
+    if (error) throw error
+
     await fetchWeights()
   }
 
   const deleteWeight = async (id) => {
-    await userReady
-    await supabase.from('weights').delete().eq('id', id).eq('user_id', user.value.id)
+    const currentUser = await requireUser()
+    const { error } = await supabase
+      .from('weights')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', currentUser.id)
+
+    if (error) throw error
+
     await fetchWeights()
   }
 
   const lastRegister = async () => {
-    await userReady
-    const { data } = await supabase
+    const currentUser = await requireUser()
+    const { data, error } = await supabase
       .from('weights')
       .select('*')
-      .eq('user_id', user.value.id)
+      .eq('user_id', currentUser.id)
       .order('date', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
+
+    if (error) throw error
+
     return data
   }
 
   const fetchWeightsByRange = async (range) => {
-    await userReady
+    const currentUser = await requireUser()
 
     const endDate = new Date()
-    let startDate = new Date()
+    const startDate = new Date()
 
     if (range === '1w') startDate.setDate(endDate.getDate() - 7)
     else if (range === '1m') startDate.setMonth(endDate.getMonth() - 1)
@@ -111,7 +136,7 @@ export const useWeightStore = defineStore('weightStore', () => {
     const { data, error } = await supabase
       .from('weights')
       .select('*')
-      .eq('user_id', user.value.id)
+      .eq('user_id', currentUser.id)
       .gte('date', startDate.toISOString())
       .order('date', { ascending: true })
 

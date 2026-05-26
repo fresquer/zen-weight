@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useWeightStore } from '@/services/useWeightTracker'
 
 const weightStore = useWeightStore()
@@ -18,19 +18,6 @@ const time = ref(new Date().toTimeString().slice(0, 5))
 const dialogRef = ref(null)
 const loading = ref(false)
 const errorMessage = ref('')
-const lastWeight = ref(null)
-
-onMounted(async () => {
-  try {
-    const lastWeightData = await lastRegister()
-    lastWeight.value = lastWeightData
-    if (lastWeightData.value && !props.editingEntry) {
-      weight.value = lastWeightData.weight
-    }
-  } catch (error) {
-    console.error('Error fetching last weight:', error)
-  }
-})
 
 watch(
   () => props.editingEntry,
@@ -44,13 +31,7 @@ watch(
         ? newValue.date.split('T')[1].slice(0, 5)
         : new Date().toTimeString().slice(0, 5)
     } else {
-      try {
-        const lastWeight = await lastRegister()
-        weight.value = lastWeight ? lastWeight.weight : null
-      } catch (error) {
-        console.error('Error fetching last weight:', error)
-        weight.value = null
-      }
+      await loadLastWeight()
       date.value = new Date().toISOString().slice(0, 10)
       time.value = new Date().toTimeString().slice(0, 5)
     }
@@ -59,7 +40,9 @@ watch(
 )
 
 async function handleSubmit() {
-  if (!weight.value || !date.value || !time.value) {
+  const parsedWeight = Number(weight.value)
+
+  if (!Number.isFinite(parsedWeight) || parsedWeight <= 0 || !date.value || !time.value) {
     errorMessage.value = 'Please enter a valid weight, date, and time.'
     return
   }
@@ -72,12 +55,12 @@ async function handleSubmit() {
 
     if (props.editingEntry) {
       await editWeight(props.editingEntry.id, {
-        value: parseFloat(weight.value),
+        value: parsedWeight,
         date: formattedDateTime,
       })
     } else {
       await addWeight({
-        value: parseFloat(weight.value),
+        value: parsedWeight,
         date: formattedDateTime,
       })
     }
@@ -87,23 +70,24 @@ async function handleSubmit() {
     console.error(error)
   } finally {
     loading.value = false
-    fetchWeights()
+    await fetchWeights()
+  }
+}
+
+async function loadLastWeight() {
+  try {
+    const lastWeightData = await lastRegister()
+    weight.value = lastWeightData ? lastWeightData.weight : null
+  } catch (error) {
+    console.error('Error fetching last weight:', error)
+    weight.value = null
   }
 }
 
 async function openModal() {
   if (dialogRef.value) {
     resetModal()
-    if (!props.editingEntry) {
-      try {
-        const lastWeightData = await lastRegister()
-        if (lastWeightData) {
-          weight.value = lastWeightData.weight
-        }
-      } catch (error) {
-        console.error('Error fetching last weight:', error)
-      }
-    }
+    if (!props.editingEntry) await loadLastWeight()
     dialogRef.value.showModal()
   }
 }
@@ -185,7 +169,7 @@ defineExpose({
       <div class="modal-footer mt-4 grid grid-cols-2 gap-4">
         <button
           class="block cursor-pointer text-sm text-slate-600"
-          type="submit"
+          type="button"
           :disabled="loading"
           @click="closeModal"
         >

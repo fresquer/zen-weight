@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { onMounted } from 'vue'
 import BaseTile from '@/components/BaseTile.vue'
 import { useUserSettings } from '@/services/useUserSettings'
 import { useWeightStore } from '@/services/useWeightTracker'
@@ -9,13 +9,7 @@ const { settings, updateSettings } = useUserSettings()
 const { weights, fetchWeights } = useWeightStore()
 
 onMounted(async () => {
-  console.log('Component mounted, fetching weights...')
   await fetchWeights()
-  console.log('Weights fetched:', weights)
-})
-
-watch(weights, (newWeights) => {
-  console.log('Weights updated:', newWeights)
 })
 
 const trackingStrategies = [

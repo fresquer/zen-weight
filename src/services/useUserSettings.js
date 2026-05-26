@@ -1,49 +1,49 @@
 import { ref, watch } from 'vue'
-import { createClient } from '@supabase/supabase-js'
 import { useAuth } from './useAuth'
+import { supabase } from './supabaseClient'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+const settings = ref({})
+
 export function useUserSettings() {
-  const { user } = useAuth()
-  const settings = ref({})
+  const { user, checkSession } = useAuth()
+
+  const requireUser = async () => {
+    if (!user.value) await checkSession()
+    if (!user.value) throw new Error('Not authenticated')
+    return user.value
+  }
 
   const fetchSettings = async () => {
-    if (!user.value) return
+    const currentUser = await requireUser()
 
     const { data, error } = await supabase
       .from('settings')
       .select('*')
-      .eq('user_id', user.value.id)
-      .single()
+      .eq('user_id', currentUser.id)
+      .maybeSingle()
 
-    if (error) {
-      console.error('Error fetching settings:', error)
-      return
-    }
+    if (error) throw error
 
     settings.value = data || {}
+    return settings.value
   }
 
   watch(user, async (newUser) => {
     if (newUser) {
       await fetchSettings()
+    } else {
+      settings.value = {}
     }
   })
 
   const updateSettings = async (newSettings) => {
-    if (!user.value) return
+    const currentUser = await requireUser()
 
     const { error } = await supabase
       .from('settings')
-      .update(newSettings)
-      .eq('user_id', user.value.id)
+      .upsert({ user_id: currentUser.id, ...newSettings }, { onConflict: 'user_id' })
 
-    if (error) {
-      console.error('Error updating settings:', error)
-      return
-    }
+    if (error) throw error
 
     await fetchSettings()
   }

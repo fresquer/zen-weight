@@ -30,3 +30,10 @@ coverage
 *.tsbuildinfo
 
 .env
+.env.*
+!.env.example
+
+# Self-hosted Supabase runtime data
+supabase/volumes/db/data/
+supabase/volumes/storage/
+supabase/volumes/snippets/

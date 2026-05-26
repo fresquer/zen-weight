@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix",
+    "lint:check": "eslint .",
     "format": "prettier --write src/"
   },
   "dependencies": {

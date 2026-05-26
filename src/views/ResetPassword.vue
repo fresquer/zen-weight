@@ -40,21 +40,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useAuth } from '@/services/useAuth'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 const { updatePassword } = useAuth()
 const router = useRouter()
-const route = useRoute()
 
 const password = ref('')
 const confirmPassword = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
 const loading = ref(false)
-const accessToken = ref(null)
-//
+
 const handlePasswordReset = async () => {
   errorMessage.value = ''
   successMessage.value = ''
@@ -67,7 +65,7 @@ const handlePasswordReset = async () => {
   }
 
   try {
-    await updatePassword(password.value, accessToken.value)
+    await updatePassword(password.value)
     successMessage.value = 'Password updated successfully'
     setTimeout(() => {
       router.push('/login')
@@ -79,15 +77,4 @@ const handlePasswordReset = async () => {
     loading.value = false
   }
 }
-
-onMounted(() => {
-  // Get the access token from URL parameters
-  const hashParams = new URLSearchParams(window.location.hash.substring(1))
-  accessToken.value = hashParams.get('access_token')
-
-  if (!accessToken.value) {
-    errorMessage.value = 'Invalid reset link'
-    router.push('/login')
-  }
-})
 </script>

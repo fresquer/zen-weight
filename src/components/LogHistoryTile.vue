@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, computed, ref, watch } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import BaseTile from './BaseTile.vue'
 import RegisterWeightModal from './RegisterWeightModal.vue'
@@ -12,8 +12,6 @@ const { fetchWeights, deleteWeight } = weightStore
 
 const editingEntry = ref(null)
 const registerModalRef = ref(null)
-const weight = ref(null)
-const date = ref(new Date().toISOString().slice(0, 10))
 
 onMounted(async () => {
   try {
@@ -31,12 +29,12 @@ const list = computed(() => {
 
 const startEdit = (entry) => {
   editingEntry.value = entry
-  weight.value = entry.value
-  date.value = entry.date
   registerModalRef.value?.openModal()
 }
 
 const handleDelete = async (id) => {
+  if (!window.confirm('Delete this weight register?')) return
+
   try {
     await deleteWeight(id)
   } catch (error) {
@@ -50,7 +48,7 @@ const handleDelete = async (id) => {
     <div class="text-lg font-semibold mb-2">Register history</div>
 
     <div class="flex flex-col space-y-2" v-if="list.length > 0">
-      <div v-for="entry in list" :key="entry.date" class="flex justify-between items-center">
+      <div v-for="entry in list" :key="entry.id" class="flex justify-between items-center">
         <div>
           {{ formatDate(entry.date) }}
           <span class="text-sm text-gray-400">{{ getTimeFromTimestamp(entry.date) }}</span>

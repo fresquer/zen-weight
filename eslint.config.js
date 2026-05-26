@@ -10,7 +10,15 @@ export default [
 
   {
     name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
+    ignores: [
+      '**/dist/**',
+      '**/dist-ssr/**',
+      '**/coverage/**',
+      '**/node_modules/**',
+      'supabase/volumes/db/data/**',
+      'supabase/volumes/storage/**',
+      'supabase/volumes/snippets/**',
+    ],
   },
 
   js.configs.recommended,
