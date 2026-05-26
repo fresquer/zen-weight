@@ -1,14 +1,14 @@
 <template>
-  <div class="flex flex-col items-center h-screen pt-16 md:pt-32 px-4">
-    <div class="w-full md:w-[400px]">
-      <div class="text-3xl md:text-5xl mb-8 text-center font-light">zen weight</div>
-      <form @submit.prevent="handlePasswordReset" class="bg-white p-8 rounded-xl shadow w-full">
+  <div class="auth-shell">
+    <div class="auth-panel">
+      <div class="auth-title">zen weight</div>
+      <form @submit.prevent="handlePasswordReset" class="app-surface w-full p-6 sm:p-8">
         <div class="mb-4">
           <input
             id="password"
             v-model="password"
             type="password"
-            class="input input-bordered w-full border-1 border-gray-300 p-2 rounded-xl"
+            class="form-input"
             placeholder="New Password"
             required
           />
@@ -18,17 +18,24 @@
             id="confirmPassword"
             v-model="confirmPassword"
             type="password"
-            class="input input-bordered w-full border-1 border-gray-300 p-2 rounded-xl"
+            class="form-input"
             placeholder="Confirm New Password"
             required
           />
         </div>
-        <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
-        <div v-if="successMessage" class="text-green-500 mb-4">{{ successMessage }}</div>
+        <div v-if="errorMessage" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+          {{ errorMessage }}
+        </div>
+        <div
+          v-if="successMessage"
+          class="mb-4 rounded-lg bg-lime-50 px-3 py-2 text-sm text-lime-700"
+        >
+          {{ successMessage }}
+        </div>
         <div>
           <button
             type="submit"
-            class="btn btn-primary w-full bg-slate-500 hover:bg-slate-600 cursor-pointer rounded-xl text-white py-2 px-4 shadow"
+            class="btn-primary w-full"
             :disabled="loading"
           >
             {{ loading ? 'Updating...' : 'Update Password' }}

@@ -96,12 +96,14 @@ function closeModal() {
   if (dialogRef.value) {
     dialogRef.value.close()
   }
+  errorMessage.value = ''
 }
 
 function resetModal() {
   weight.value = null
   date.value = new Date().toISOString().slice(0, 10)
   time.value = new Date().toTimeString().slice(0, 5)
+  errorMessage.value = ''
 }
 
 defineExpose({
@@ -113,62 +115,93 @@ defineExpose({
 <template>
   <dialog
     ref="dialogRef"
-    class="modal w-md bg-white p-8 shadow mx-auto mt-8"
+    class="app-surface m-auto w-[calc(100%-2rem)] max-w-[440px] overflow-hidden p-0 text-slate-700 backdrop:bg-slate-950/35"
     @close="closeModal"
     @click="(e) => e.target === dialogRef && closeModal()"
   >
-    <form class="modal-box w-full max-w-md" @submit.prevent="handleSubmit" @click.stop>
-      <div class="modal-body space-y-4 mb-6">
-        <div class="border-b border-slate-200 pb-1">
-          <label for="weight" class="label">
-            <span class="label-text text-slate-500">Weight</span>
+    <form class="w-full p-5 sm:p-6" @submit.prevent="handleSubmit" @click.stop>
+      <div class="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-800">
+            {{ editingEntry ? 'Edit register' : 'Add register' }}
+          </h2>
+          <p class="mt-1 text-xs text-slate-400">Keep it simple. One calm entry at a time.</p>
+        </div>
+        <button
+          type="button"
+          class="icon-button -mr-2 -mt-2"
+          :disabled="loading"
+          aria-label="Close"
+          @click="closeModal"
+        >
+          <svg
+            class="h-4 w-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label for="weight" class="form-label">
+            Weight
           </label>
-          <div class="flex items-center">
+          <div class="relative">
             <input
               id="weight"
               v-model="weight"
               type="number"
               step="0.1"
               min="0"
-              class="input input-bordered w-full focus:outline-none text-3xl pr-12"
+              class="form-input pr-14 text-3xl font-semibold tabular-nums"
               placeholder="Weight"
               required
             />
-            <span class="text-slate-500 text-2xl -ml-10">kg</span>
+            <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-lg text-slate-400">
+              kg
+            </span>
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-8">
-          <div class="border-b border-slate-200 pb-1">
-            <label for="date" class="label mt-4">
-              <span class="label-text text-slate-500">Date</span>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label for="date" class="form-label">
+              Date
             </label>
             <input
               id="date"
               v-model="date"
               type="date"
-              class="input input-bordered w-full focus:outline-none"
+              class="form-input"
               required
             />
           </div>
-          <div class="border-b border-slate-200 pb-1">
-            <label for="time" class="label mt-4">
-              <span class="label-text text-slate-500">Time</span>
+          <div>
+            <label for="time" class="form-label">
+              Time
             </label>
             <input
               id="time"
               v-model="time"
               type="time"
-              class="input input-bordered w-full focus:outline-none"
+              class="form-input"
               required
             />
           </div>
         </div>
-        <p v-if="errorMessage" class="text-red-500 text-sm mt-2">{{ errorMessage }}</p>
+        <p v-if="errorMessage" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+          {{ errorMessage }}
+        </p>
       </div>
 
-      <div class="modal-footer mt-4 grid grid-cols-2 gap-4">
+      <div class="mt-6 grid grid-cols-2 gap-3">
         <button
-          class="block cursor-pointer text-sm text-slate-600"
+          class="btn-secondary"
           type="button"
           :disabled="loading"
           @click="closeModal"
@@ -176,7 +209,7 @@ defineExpose({
           Cancel
         </button>
         <button
-          class="block btn-primary cursor-pointer px-8 py-2 bg-slate-700 hover:bg-slate-800 text-sm text-slate-100 rounded-full whitespace-nowrap"
+          class="btn-primary"
           type="submit"
           :disabled="loading"
         >
@@ -186,9 +219,3 @@ defineExpose({
     </form>
   </dialog>
 </template>
-
-<style>
-dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.5);
-}
-</style>

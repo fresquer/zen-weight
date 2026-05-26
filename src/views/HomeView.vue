@@ -30,11 +30,11 @@ const isGoalSettingEnabled = computed(() => {
     <BaseTile>
       <router-link
         to="/app/registers"
-        class="text-gray-600 hover:text-gray-800 block font-semibold text-center flex items-center justify-center gap-2"
+        class="flex items-center justify-center gap-3 text-center font-semibold text-slate-600 hover:text-slate-800"
       >
         <!-- data icon -->
         <svg
-          class="text-gray-300"
+          class="text-lime-500"
           width="24"
           height="24"
           viewBox="0 0 24 24"
@@ -53,11 +53,11 @@ const isGoalSettingEnabled = computed(() => {
       </router-link>
     </BaseTile>
     <div class="flex justify-center mt-4 py-4">
-      <RouterLink to="/app/configuration" class="flex items-center gap-2 text-gray-500">
+      <RouterLink to="/app/configuration" class="page-link">
         <!-- Gear Icon --->
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 text-gray-400 mx-auto"
+          class="mx-auto h-5 w-5 text-slate-400"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -75,7 +75,7 @@ const isGoalSettingEnabled = computed(() => {
             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
           />
         </svg>
-        <p class="text-gray-400 cursor-pointer">Configuration</p>
+        <p>Configuration</p>
       </RouterLink>
     </div>
   </div>

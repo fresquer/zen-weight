@@ -9,11 +9,14 @@ onMounted(fetchSettings)
 </script>
 
 <template>
-  <div class="space-y-6">
-    <router-link to="/app" class="text-gray-600 hover:text-gray-800 mb-4 block">
+  <div class="space-y-4">
+    <router-link to="/app" class="page-link">
       &larr; Back
     </router-link>
-    <h1 class="text-2xl font-bold">Configuration</h1>
+    <div class="px-1">
+      <h1 class="text-2xl font-bold text-slate-800">Configuration</h1>
+      <p class="mt-1 text-sm text-slate-400">Tune your tracking without adding noise.</p>
+    </div>
     <ProgressGoalConfiguration :settings="settings" />
     <BasicConfiguration :settings="settings" />
   </div>

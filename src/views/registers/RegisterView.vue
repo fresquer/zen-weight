@@ -4,16 +4,16 @@ import LogHistoryTile from '@/components/LogHistoryTile.vue'
 
 <template>
   <div>
-    <router-link to="/app" class="text-gray-600 hover:text-gray-800 mb-4 block">
+    <router-link to="/app" class="page-link mb-4">
       &larr; Back
     </router-link>
     <LogHistoryTile />
     <div class="flex justify-center mt-4 py-4">
-      <RouterLink to="/app/configuration" class="flex items-center gap-2 text-gray-500">
+      <RouterLink to="/app/configuration" class="page-link">
         <!-- Gear Icon --->
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 text-gray-400 mx-auto"
+          class="mx-auto h-5 w-5 text-slate-400"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -31,7 +31,7 @@ import LogHistoryTile from '@/components/LogHistoryTile.vue'
             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
           />
         </svg>
-        <p class="text-gray-400 cursor-pointer">Configuration</p>
+        <p>Configuration</p>
       </RouterLink>
     </div>
   </div>

@@ -45,18 +45,29 @@ const handleDelete = async (id) => {
 
 <template>
   <BaseTile>
-    <div class="text-lg font-semibold mb-2">Register history</div>
+    <div class="mb-4 flex items-center justify-between gap-3">
+      <div>
+        <h2 class="text-lg font-semibold text-slate-800">Register history</h2>
+        <p class="text-xs text-slate-400">Latest entries first</p>
+      </div>
+    </div>
 
-    <div class="flex flex-col space-y-2" v-if="list.length > 0">
-      <div v-for="entry in list" :key="entry.id" class="flex justify-between items-center">
+    <div class="divide-y divide-slate-100" v-if="list.length > 0">
+      <div
+        v-for="entry in list"
+        :key="entry.id"
+        class="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
+      >
         <div>
-          {{ formatDate(entry.date) }}
-          <span class="text-sm text-gray-400">{{ getTimeFromTimestamp(entry.date) }}</span>
+          <p class="text-sm font-semibold text-slate-700">{{ formatDate(entry.date) }}</p>
+          <p class="text-xs text-slate-400">{{ getTimeFromTimestamp(entry.date) }}</p>
         </div>
-        <div class="flex items-center">
-          <div>{{ entry.value }}</div>
-          <div class="text-sm text-gray-400 ml-1">kg</div>
-          <button @click="startEdit(entry)" class="ml-2 text-gray-400 hover:text-gray-600">
+        <div class="flex items-center gap-1">
+          <div class="mr-2 flex items-baseline">
+            <span class="font-semibold text-slate-800">{{ entry.value }}</span>
+            <span class="ml-1 text-xs text-slate-400">kg</span>
+          </div>
+          <button @click="startEdit(entry)" class="icon-button" aria-label="Edit register">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-4 w-4"
@@ -72,7 +83,7 @@ const handleDelete = async (id) => {
               />
             </svg>
           </button>
-          <button @click="handleDelete(entry.id)" class="ml-2 text-gray-400 hover:text-gray-600">
+          <button @click="handleDelete(entry.id)" class="icon-button" aria-label="Delete register">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-4 w-4"
@@ -92,9 +103,8 @@ const handleDelete = async (id) => {
       </div>
     </div>
     <div v-else>
-      <div class="text-center text-gray-400 my-16 px-4 md:px-16 text-sm">
-        Start your journey by adding your first weight register. It's the first step to tracking
-        your progress! ✨
+      <div class="my-14 rounded-lg bg-slate-50 px-4 py-8 text-center text-sm text-slate-400 sm:mx-8">
+        Start by adding your first weight register. It is the first step to tracking your progress.
       </div>
     </div>
 

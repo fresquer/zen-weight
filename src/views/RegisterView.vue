@@ -1,24 +1,24 @@
 <template>
-  <div class="flex flex-col items-center h-screen pt-16 md:pt-32 px-4">
-    <div class="w-full md:w-[400px]">
-      <div class="text-3xl md:text-5xl mb-8 text-center font-light">zen weight</div>
-      <form @submit.prevent="handleRegister" class="bg-white p-8 rounded-xl shadow w-full">
-        <div class="mb-4">
+  <div class="auth-shell">
+    <div class="auth-panel">
+      <div class="auth-title">zen weight</div>
+      <form @submit.prevent="handleRegister" class="app-surface w-full p-6 sm:p-8">
+        <div class="mb-3">
           <input
             id="email"
             v-model="email"
             type="email"
-            class="input input-bordered w-full border-1 border-gray-300 p-2 rounded-xl"
+            class="form-input"
             placeholder="Email"
             required
           />
         </div>
-        <div class="mb-2">
+        <div class="mb-3">
           <input
             id="password"
             v-model="password"
             type="password"
-            class="input input-bordered w-full border-1 border-gray-300 p-2 rounded-xl"
+            class="form-input"
             placeholder="Password"
             required
           />
@@ -28,25 +28,27 @@
             id="confirmPassword"
             v-model="confirmPassword"
             type="password"
-            class="input input-bordered w-full border-1 border-gray-300 p-2 rounded-xl"
+            class="form-input"
             placeholder="Confirm Password"
             required
           />
         </div>
-        <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
+        <div v-if="errorMessage" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+          {{ errorMessage }}
+        </div>
         <div>
           <button
             type="submit"
-            class="btn btn-primary w-full bg-slate-500 hover:bg-slate-600 cursor-pointer rounded-xl text-white py-2 px-4 shadow"
+            class="btn-primary w-full"
             :disabled="loading"
           >
             {{ loading ? 'Creating Account...' : 'Register' }}
           </button>
         </div>
       </form>
-      <p class="mt-6 text-sm text-center">
+      <p class="mt-6 text-center text-sm text-slate-500">
         Already have an account?
-        <router-link to="/login" class="text-slate-700 underline">Login</router-link>
+        <router-link to="/login" class="font-semibold text-slate-700 underline">Login</router-link>
       </p>
     </div>
   </div>

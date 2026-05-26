@@ -1,14 +1,14 @@
 <template>
-  <div class="flex flex-col items-center h-screen pt-16 md:pt-32 px-4">
-    <div class="w-full md:w-[400px]">
-      <div class="text-3xl md:text-5xl mb-8 text-center font-light">zen weight</div>
-      <form @submit.prevent="handleLogin" class="bg-white p-8 rounded-xl shadow w-full">
-        <div class="mb-2">
+  <div class="auth-shell">
+    <div class="auth-panel">
+      <div class="auth-title">zen weight</div>
+      <form @submit.prevent="handleLogin" class="app-surface w-full p-6 sm:p-8">
+        <div class="mb-3">
           <input
             id="email"
             v-model="email"
             type="email"
-            class="input input-bordered w-full border-1 border-gray-300 p-2 rounded-xl"
+            class="form-input"
             placeholder="Email"
             required
           />
@@ -18,16 +18,18 @@
             id="password"
             v-model="password"
             type="password"
-            class="input input-bordered w-full border-1 border-gray-300 p-2 rounded-xl"
+            class="form-input"
             placeholder="Password"
             required
           />
         </div>
-        <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
+        <div v-if="errorMessage" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+          {{ errorMessage }}
+        </div>
         <div>
           <button
             type="submit"
-            class="btn btn-primary w-full bg-slate-500 hover:bg-slate-600 cursor-pointer rounded-xl text-white py-2 px-4 shadow"
+            class="btn-primary w-full"
             :disabled="loading"
           >
             {{ loading ? 'Logging in...' : 'Login' }}
@@ -35,14 +37,14 @@
         </div>
       </form>
       <div class="text-center mt-4">
-        <router-link to="/lost-password" class="text-sm text-gray-500 hover:text-gray-700">
+        <router-link to="/lost-password" class="text-sm text-slate-500 hover:text-slate-700">
           Forgot your password?
         </router-link>
       </div>
-      <hr class="my-4 text-gray-200 w-1/2 mx-auto" />
-      <p class="mt-4 text-sm text-center">
+      <hr class="my-4 mx-auto w-1/2 border-slate-200" />
+      <p class="mt-4 text-center text-sm text-slate-500">
         Don't have an account?
-        <router-link to="/register" class="text-slate-700 underline">Register</router-link>
+        <router-link to="/register" class="font-semibold text-slate-700 underline">Register</router-link>
       </p>
     </div>
   </div>

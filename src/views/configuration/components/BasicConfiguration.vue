@@ -23,11 +23,14 @@ const logOut = async () => {
 
 <template>
   <BaseTile>
-    <div class="p-4">
-      <div class="flex justify-between items-center">
-        <p><b>Logged as:</b> {{ userEmail }}</p>
-        <p class="text-red-400 cursor-pointer" @click="logOut">Log out</p>
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="min-w-0">
+        <p class="text-xs font-semibold uppercase tracking-normal text-slate-400">Logged as</p>
+        <p class="mt-1 truncate text-sm font-semibold text-slate-700">{{ userEmail }}</p>
       </div>
+      <button type="button" class="btn-secondary border-red-100 text-red-500 hover:bg-red-50" @click="logOut">
+        Log out
+      </button>
     </div>
   </BaseTile>
 </template>

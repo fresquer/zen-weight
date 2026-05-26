@@ -1,5 +1,5 @@
 <script setup></script>
 
 <template>
-  <div class="bg-white p-4 rounded-lg shadow"><slot /></div>
+  <section class="app-surface p-4 sm:p-5"><slot /></section>
 </template>

@@ -25,26 +25,30 @@ const saveSettings = (field, value) => {
 
 <template>
   <BaseTile>
-    <div class="p-4">
-      <h3 class="font-bold mb-4">Weight Goal Configuration</h3>
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-1">Target Weight</label>
+    <div class="space-y-4">
+      <div>
+        <h3 class="font-semibold text-slate-800">Weight goal</h3>
+        <p class="mt-1 text-xs text-slate-400">Set the target and how progress is calculated.</p>
+      </div>
+
+      <div>
+        <label class="form-label">Target Weight</label>
         <input
           type="number"
           v-model.number="settings.target_weight"
           @change="saveSettings('target_weight', settings.target_weight)"
-          class="w-full p-2 border text-xs border-gray-300 rounded-xl"
+          class="form-input"
           step="0.1"
           min="0"
         />
       </div>
 
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-1">Starting Weight</label>
+      <div>
+        <label class="form-label">Starting Weight</label>
         <select
           v-model="settings.starting_weight"
           @change="saveSettings('starting_weight', parseFloat(settings.starting_weight))"
-          class="w-full p-2 border text-xs border-gray-300 rounded-xl"
+          class="form-input"
         >
           <option :value="null" disabled>Select your starting weight</option>
           <option v-for="weight in weights" :key="weight.id" :value="weight.weight">
@@ -53,23 +57,23 @@ const saveSettings = (field, value) => {
         </select>
       </div>
 
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-1">Goal Segments</label>
+      <div>
+        <label class="form-label">Goal Segments</label>
         <input
           type="number"
           v-model.number="settings.goal_segments"
           @change="saveSettings('goal_segments', settings.goal_segments)"
-          class="w-full p-2 border text-xs border-gray-300 rounded-xl"
+          class="form-input"
           min="1"
         />
       </div>
 
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-1">Tracking Strategy</label>
+      <div>
+        <label class="form-label">Tracking Strategy</label>
         <select
           v-model="settings.tracking_strategy"
           @change="updateSettings({ tracking_strategy: settings.tracking_strategy })"
-          class="w-full p-2 border text-xs border-gray-300 rounded-xl"
+          class="form-input"
         >
           <option
             v-for="option in trackingStrategies"
@@ -83,7 +87,7 @@ const saveSettings = (field, value) => {
       </div>
 
       <div
-        class="text-sm text-gray-500 mb-4 bg-gray-100 p-4 rounded-xl"
+        class="rounded-lg border border-lime-100 bg-lime-50/70 p-4 text-sm text-slate-600"
         v-if="settings.tracking_strategy === 'moving_average'"
       >
         The <b>moving average weight</b> smooths daily fluctuations to show your real progress. It

@@ -8,15 +8,15 @@ const { currentWeight, trackingStrategy } = useGoalProgress()
 <template>
   <div>
     <BaseTile>
-      <div>
+      <div class="py-2">
         <!-- Current Weight -->
         <div class="flex flex-col items-center">
-          <div class="text-4xl font-bold text-slate-700 mb-2">
+          <div class="mb-2 text-4xl font-bold text-slate-800">
             {{ currentWeight !== null ? currentWeight.toFixed(2) + ' kg' : 'No data' }}
           </div>
-          <div class="text-sm">
+          <div class="text-sm text-slate-500">
             Current Weight
-            <span class="text-gray-500 text-xs" v-if="trackingStrategy === 'moving_average'">
+            <span class="text-xs text-slate-400" v-if="trackingStrategy === 'moving_average'">
               (Moving Average)
             </span>
           </div>
@@ -25,10 +25,10 @@ const { currentWeight, trackingStrategy } = useGoalProgress()
         <!-- Prompt Text -->
       </div>
     </BaseTile>
-    <div class="mt-4 text-center text-sm text-gray-600">
-      <p class="mb-3">🎯 Set your goal and start your journey.</p>
+    <div class="mt-4 text-center text-sm text-slate-500">
+      <p class="mb-3">Set your goal and start your journey.</p>
       <RouterLink to="/app/configuration">
-        <button class="bg-lime-500 text-white px-4 py-1 rounded-2xl cursor-pointer">
+        <button class="btn-primary min-h-9 bg-lime-500 px-4 py-1.5 text-slate-900 hover:bg-lime-400">
           Get Started
         </button>
       </RouterLink>

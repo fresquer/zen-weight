@@ -47,9 +47,10 @@ const chartData = computed(() => ({
   datasets: [
     {
       data: chartDataPoints.value.map((item) => item.value),
-      borderColor: '#7ccf00',
+      borderColor: '#84cc16',
       backgroundColor: 'transparent',
-      tension: 0.3,
+      borderWidth: 3,
+      tension: 0.35,
       pointRadius: 0,
     },
   ],
@@ -77,23 +78,29 @@ const chartOptions = {
 
 <template>
   <BaseTile>
-    <div class="flex justify-end mb-2 gap-2">
+    <div class="mb-3 flex items-center justify-between gap-3">
+      <div>
+        <h2 class="text-sm font-semibold text-slate-700">Trend</h2>
+        <p class="text-xs text-slate-400">Your recent movement</p>
+      </div>
+      <div class="flex rounded-lg bg-slate-100 p-1">
       <button
         v-for="range in ['1w', '1m', '1y']"
         :key="range"
         @click="timeRange = range"
-        class="text-xs px-2 py-1 rounded hover:bg-gray-100"
-        :class="{ 'bg-gray-200 font-semibold': timeRange === range }"
+        class="rounded-md px-2.5 py-1 text-xs font-semibold text-slate-500 hover:text-slate-800"
+        :class="{ 'bg-white text-slate-800 shadow-sm': timeRange === range }"
       >
         {{ range }}
       </button>
+      </div>
     </div>
 
-    <div class="h-48 w-full flex items-center justify-center" v-if="chartDataPoints.length === 0">
-      <p class="text-sm text-gray-500">No data available for this period.</p>
+    <div class="flex h-52 w-full items-center justify-center" v-if="chartDataPoints.length === 0">
+      <p class="text-center text-sm text-slate-400">No data available for this period.</p>
     </div>
 
-    <div v-else class="h-48 w-full">
+    <div v-else class="h-52 w-full">
       <Line :data="chartData" :options="chartOptions" class="w-full" />
     </div>
   </BaseTile>
