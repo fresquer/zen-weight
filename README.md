@@ -55,9 +55,33 @@ npm run dev
 npm run build
 ```
 
-## 🏠 Self-hosted Docker bundle
+## 🏠 Homelab deployment
 
-Zen Weight can run with a self-hosted Supabase stack on a homeserver.
+Zen Weight can run on a homelab server with Docker Compose. The compose bundle includes the Zen Weight frontend and a self-hosted Supabase stack, so you do not need a separate hosted Supabase project.
+
+Default ports are intentionally uncommon to avoid collisions with other homelab services:
+
+- Zen Weight app: `38181`
+- Supabase/Kong HTTP gateway: `38001`
+- Supabase/Kong HTTPS gateway: `38443`
+
+For a server at `192.168.1.140`, the app will be available at `http://192.168.1.140:38181`.
+
+### Server prerequisites
+
+Install Docker and Docker Compose on the server, then copy the repository to a stable directory such as:
+
+```bash
+/opt/zen-weight
+```
+
+If copying from your workstation, exclude generated directories:
+
+```bash
+rsync -av --exclude node_modules --exclude dist ./ laperlanegra@192.168.1.140:/opt/zen-weight/
+```
+
+### First deployment
 
 1. Copy the example environment:
 
@@ -68,8 +92,26 @@ cp .env.example .env
 2. Edit `.env`:
 
 - Replace every default secret before first start.
-- For Tailscale/VPN access, replace `localhost` in `ZENWEIGHT_PUBLIC_URL`, `SUPABASE_PUBLIC_URL`, `API_EXTERNAL_URL`, `SITE_URL`, `ADDITIONAL_REDIRECT_URLS`, and `VITE_SUPABASE_URL` with your stable Tailscale host or IP.
+- Replace `localhost` in `ZENWEIGHT_PUBLIC_URL`, `SUPABASE_PUBLIC_URL`, `API_EXTERNAL_URL`, `SITE_URL`, `ADDITIONAL_REDIRECT_URLS`, and `VITE_SUPABASE_URL` with your server IP, DNS name, or Tailscale host.
 - Use `sh supabase/utils/generate-keys.sh --update-env` to generate local secrets; it also keeps `VITE_SUPABASE_KEY` equal to `ANON_KEY`.
+
+Example LAN values:
+
+```env
+ZENWEIGHT_HTTP_PORT=38181
+ZENWEIGHT_PUBLIC_URL=http://192.168.1.140:38181
+
+KONG_HTTP_PORT=38001
+KONG_HTTPS_PORT=38443
+
+SUPABASE_PUBLIC_URL=http://192.168.1.140:38001
+API_EXTERNAL_URL=http://192.168.1.140:38001
+
+SITE_URL=http://192.168.1.140:38181
+ADDITIONAL_REDIRECT_URLS=http://192.168.1.140:38181/reset-password
+
+VITE_SUPABASE_URL=http://192.168.1.140:38001
+```
 
 3. Start the bundle:
 
@@ -80,14 +122,29 @@ docker compose up -d --build
 4. Open Zen Weight:
 
 ```text
-http://<your-tailscale-host>:8081
+http://<your-server-ip-or-host>:38181
 ```
 
-Supabase is exposed through Kong on port `8000`. Studio is available through the same gateway and protected by `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`.
+Supabase is exposed through Kong on port `38001`. Studio is available through the same gateway and protected by `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`.
+
+If you later expose the app through Tailscale, a domain, or a reverse proxy, update all public URL values in `.env` to that stable external host, especially `ZENWEIGHT_PUBLIC_URL`, `SUPABASE_PUBLIC_URL`, `API_EXTERNAL_URL`, `SITE_URL`, `ADDITIONAL_REDIRECT_URLS`, and `VITE_SUPABASE_URL`. Because Vite embeds `VITE_SUPABASE_URL` and `VITE_SUPABASE_KEY` when building the frontend image, rebuild after changing those values:
+
+```bash
+docker compose build zenweight
+docker compose up -d
+```
 
 The first database initialization applies the Zen Weight schema from `supabase/volumes/db/100-zenweight.sql`. Runtime Postgres data is stored in `supabase/volumes/db/data/` and is intentionally ignored by git.
 
 Password reset emails require a real SMTP configuration. The default self-hosted setup autoconfirms email signup so local registration works without SMTP.
+
+To stop the stack without deleting data:
+
+```bash
+docker compose down
+```
+
+Avoid `docker compose down -v` unless you intentionally want to delete the database volumes.
 
 ## 🛠️ Tech Stack
 
