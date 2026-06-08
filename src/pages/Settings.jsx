@@ -58,7 +58,7 @@ export function Settings() {
   }, [fetchSettings, fetchWeights])
 
   useEffect(() => {
-    if (!settings || loaded.current) return
+    if (!settings?.user_id || loaded.current) return
     const u = settings.unit ?? 'kg'
     setUnit(u)
     setStartingWeight(
