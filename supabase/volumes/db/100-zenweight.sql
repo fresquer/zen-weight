@@ -22,6 +22,9 @@ create table if not exists public.settings (
     check (tracking_strategy in ('moving_average', 'last_weight', 'lowest_weight')),
   unit text not null default 'kg'
     check (unit in ('kg', 'lbs')),
+  show_weekly_summary boolean not null default true,
+  show_trend boolean not null default true,
+  show_goal boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

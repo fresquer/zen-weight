@@ -26,6 +26,9 @@ export function Settings() {
   const [goalSegments, setGoalSegments] = useState('5')
   const [strategy, setStrategy] = useState('last_weight')
   const [unit, setUnit] = useState('kg')
+  const [showWeeklySummary, setShowWeeklySummary] = useState(true)
+  const [showTrend, setShowTrend] = useState(true)
+  const [showGoal, setShowGoal] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -58,6 +61,9 @@ export function Settings() {
       )
       setGoalSegments(settings.goal_segments ?? '5')
       setStrategy(settings.tracking_strategy ?? 'last_weight')
+      setShowWeeklySummary(settings.show_weekly_summary ?? true)
+      setShowTrend(settings.show_trend ?? true)
+      setShowGoal(settings.show_goal ?? true)
     }
   }, [settings])
 
@@ -72,6 +78,9 @@ export function Settings() {
         goal_segments: Number(goalSegments) || 5,
         tracking_strategy: strategy,
         unit,
+        show_weekly_summary: showWeeklySummary,
+        show_trend: showTrend,
+        show_goal: showGoal,
       })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
@@ -195,6 +204,37 @@ export function Settings() {
           {saved ? 'Saved' : saving ? 'Saving…' : 'Save settings'}
         </Button>
       </form>
+
+      {/* Dashboard visibility */}
+      <Card>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">
+          Dashboard
+        </p>
+        <div className="space-y-3">
+          {[
+            { label: 'Goal progress', value: showGoal, set: setShowGoal },
+            { label: 'Weekly summary', value: showWeeklySummary, set: setShowWeeklySummary },
+            { label: 'Trend projection', value: showTrend, set: setShowTrend },
+          ].map(({ label, value, set }) => (
+            <div key={label} className="flex items-center justify-between">
+              <span className="text-sm text-gray-700">{label}</span>
+              <button
+                type="button"
+                onClick={() => set((v) => !v)}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+                  value ? 'bg-lime-500' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                    value ? 'translate-x-4' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+          ))}
+        </div>
+      </Card>
 
       {/* Export */}
       <Card>

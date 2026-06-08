@@ -39,6 +39,9 @@ export function Dashboard() {
   const { fetchWeights, weights } = useWeightStore()
   const { fetchSettings } = useSettingsStore()
   const unit = useSettingsStore((s) => s.settings?.unit ?? 'kg')
+  const showGoal = useSettingsStore((s) => s.settings?.show_goal ?? true)
+  const showWeeklySummary = useSettingsStore((s) => s.settings?.show_weekly_summary ?? true)
+  const showTrend = useSettingsStore((s) => s.settings?.show_trend ?? true)
   const { currentWeight, isGoalEnabled, trackingStrategy } = useGoalProgress()
   const projection = useTrendProjection()
 
@@ -71,7 +74,7 @@ export function Dashboard() {
         {currentWeight === null && (
           <p className="mt-2 text-xs text-gray-400">Log your first weight to get started</p>
         )}
-        {projection && (
+        {showTrend && projection && (
           <p className="mt-2 text-xs text-gray-400">
             At this rate, goal in ~
             {projection.weeksToGoal === 1
@@ -84,10 +87,10 @@ export function Dashboard() {
       </div>
 
       {/* Goal progress */}
-      {isGoalEnabled && <GoalProgress />}
+      {showGoal && isGoalEnabled && <GoalProgress />}
 
       {/* Weekly summary */}
-      <WeeklySummary />
+      {showWeeklySummary && <WeeklySummary />}
 
       {/* Chart */}
       <WeightChart />
