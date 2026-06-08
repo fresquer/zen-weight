@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { useSettingsStore } from '@/store/settingsStore'
+import { useWeightStore } from '@/store/weightStore'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { fromDisplay } from '@/utils/weight'
+import { exportWeightsCSV } from '@/utils/export'
 
 const strategies = [
   { value: 'last_weight', label: 'Last entry', description: 'Use the most recent weigh-in.' },
@@ -15,23 +18,44 @@ const strategies = [
 export function Settings() {
   const { logout } = useAuthStore()
   const { settings, fetchSettings, updateSettings } = useSettingsStore()
+  const { weights, fetchWeights } = useWeightStore()
   const navigate = useNavigate()
 
   const [startingWeight, setStartingWeight] = useState('')
   const [targetWeight, setTargetWeight] = useState('')
   const [goalSegments, setGoalSegments] = useState('5')
   const [strategy, setStrategy] = useState('last_weight')
+  const [unit, setUnit] = useState('kg')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     fetchSettings()
-  }, [fetchSettings])
+    fetchWeights()
+  }, [fetchSettings, fetchWeights])
 
   useEffect(() => {
     if (settings) {
-      setStartingWeight(settings.starting_weight ?? '')
-      setTargetWeight(settings.target_weight ?? '')
+      const u = settings.unit ?? 'kg'
+      setUnit(u)
+      setStartingWeight(
+        settings.starting_weight != null
+          ? String(
+              u === 'lbs'
+                ? (Number(settings.starting_weight) * 2.20462).toFixed(1)
+                : Number(settings.starting_weight).toFixed(1),
+            )
+          : '',
+      )
+      setTargetWeight(
+        settings.target_weight != null
+          ? String(
+              u === 'lbs'
+                ? (Number(settings.target_weight) * 2.20462).toFixed(1)
+                : Number(settings.target_weight).toFixed(1),
+            )
+          : '',
+      )
       setGoalSegments(settings.goal_segments ?? '5')
       setStrategy(settings.tracking_strategy ?? 'last_weight')
     }
@@ -43,10 +67,11 @@ export function Settings() {
     setSaved(false)
     try {
       await updateSettings({
-        starting_weight: startingWeight ? Number(startingWeight) : null,
-        target_weight: targetWeight ? Number(targetWeight) : null,
+        starting_weight: startingWeight ? fromDisplay(Number(startingWeight), unit) : null,
+        target_weight: targetWeight ? fromDisplay(Number(targetWeight), unit) : null,
         goal_segments: Number(goalSegments) || 5,
         tracking_strategy: strategy,
+        unit,
       })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
@@ -55,6 +80,10 @@ export function Settings() {
     } finally {
       setSaving(false)
     }
+  }
+
+  function handleExport() {
+    exportWeightsCSV(weights, unit)
   }
 
   async function handleLogout() {
@@ -102,6 +131,27 @@ export function Settings() {
           </div>
         </Card>
 
+        {/* Unit */}
+        <Card>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">
+            Unit
+          </p>
+          <div className="flex rounded-lg border border-gray-200 p-0.5">
+            {['kg', 'lbs'].map((u) => (
+              <button
+                key={u}
+                type="button"
+                onClick={() => setUnit(u)}
+                className={`flex-1 rounded-md py-2 text-sm font-medium transition-colors ${
+                  unit === u ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-900'
+                }`}
+              >
+                {u}
+              </button>
+            ))}
+          </div>
+        </Card>
+
         {/* Goal */}
         <Card>
           <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">
@@ -109,22 +159,22 @@ export function Settings() {
           </p>
           <div className="space-y-3">
             <Input
-              label="Starting weight (kg)"
+              label={`Starting weight (${unit})`}
               id="starting-weight"
               type="number"
               step="0.1"
               min="0"
-              placeholder="e.g. 85.0"
+              placeholder={unit === 'lbs' ? 'e.g. 187.0' : 'e.g. 85.0'}
               value={startingWeight}
               onChange={(e) => setStartingWeight(e.target.value)}
             />
             <Input
-              label="Target weight (kg)"
+              label={`Target weight (${unit})`}
               id="target-weight"
               type="number"
               step="0.1"
               min="0"
-              placeholder="e.g. 70.0"
+              placeholder={unit === 'lbs' ? 'e.g. 154.0' : 'e.g. 70.0'}
               value={targetWeight}
               onChange={(e) => setTargetWeight(e.target.value)}
             />
@@ -146,8 +196,28 @@ export function Settings() {
         </Button>
       </form>
 
+      {/* Export */}
+      <Card>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">
+          Data
+        </p>
+        <Button
+          type="button"
+          variant="secondary"
+          className="w-full"
+          onClick={handleExport}
+          disabled={!weights.length}
+        >
+          Export data (CSV)
+        </Button>
+      </Card>
+
       <div className="pt-2">
-        <Button variant="ghost" className="w-full text-red-500 hover:bg-red-50 hover:text-red-600" onClick={handleLogout}>
+        <Button
+          variant="ghost"
+          className="w-full text-red-500 hover:bg-red-50 hover:text-red-600"
+          onClick={handleLogout}
+        >
           Sign out
         </Button>
       </div>

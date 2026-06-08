@@ -4,6 +4,7 @@ create table if not exists public.weights (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   weight numeric(6, 2) not null check (weight > 0),
+  note text,
   date timestamptz not null default now(),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -19,6 +20,8 @@ create table if not exists public.settings (
   goal_segments integer not null default 5 check (goal_segments > 0),
   tracking_strategy text not null default 'last_weight'
     check (tracking_strategy in ('moving_average', 'last_weight', 'lowest_weight')),
+  unit text not null default 'kg'
+    check (unit in ('kg', 'lbs')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

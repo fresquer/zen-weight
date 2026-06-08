@@ -7,31 +7,34 @@ import {
   YAxis,
 } from 'recharts'
 import { useWeightStore } from '@/store/weightStore'
+import { useSettingsStore } from '@/store/settingsStore'
 import { Card } from '@/components/ui/Card'
 import { formatDate } from '@/utils/dates'
+import { toDisplay } from '@/utils/weight'
 
 const RANGES = ['1w', '1m', '1y']
 
-function CustomTooltip({ active, payload }) {
+function CustomTooltip({ active, payload, unit }) {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (
     <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs shadow-sm">
       <p className="text-gray-400">{formatDate(d.date)}</p>
-      <p className="font-mono font-semibold text-gray-900">{d.value} kg</p>
+      <p className="font-mono font-semibold text-gray-900">{d.value.toFixed(1)} {unit}</p>
     </div>
   )
 }
 
 export function WeightChart() {
   const { fetchWeightsByRange, weights } = useWeightStore()
+  const unit = useSettingsStore((s) => s.settings?.unit ?? 'kg')
   const [range, setRange] = useState('1w')
   const [data, setData] = useState([])
 
   const load = useCallback(async () => {
     try {
       const raw = await fetchWeightsByRange(range)
-      let points = raw.map((r) => ({ date: r.date, value: Number(r.weight) }))
+      let points = raw.map((r) => ({ date: r.date, value: toDisplay(Number(r.weight), unit) }))
       if (points.length === 1) {
         const copy = { ...points[0] }
         const next = new Date(copy.date)
@@ -43,7 +46,7 @@ export function WeightChart() {
     } catch {
       setData([])
     }
-  }, [range, fetchWeightsByRange])
+  }, [range, fetchWeightsByRange, unit])
 
   useEffect(() => { load() }, [load])
   useEffect(() => { load() }, [weights.length, load])
@@ -77,7 +80,7 @@ export function WeightChart() {
         <ResponsiveContainer width="100%" height={160}>
           <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
             <YAxis domain={['auto', 'auto']} hide />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip unit={unit} />} />
             <Line
               type="monotone"
               dataKey="value"

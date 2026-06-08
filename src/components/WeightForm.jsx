@@ -1,45 +1,51 @@
 import { useState, useEffect, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { useWeightStore } from '@/store/weightStore'
+import { useSettingsStore } from '@/store/settingsStore'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { toDisplay, fromDisplay } from '@/utils/weight'
 import { toLocalDateString, toLocalTimeString } from '@/utils/dates'
 
 export function WeightForm({ open, onClose, editingEntry }) {
   const { addWeight, editWeight, lastRegister } = useWeightStore()
+  const unit = useSettingsStore((s) => s.settings?.unit ?? 'kg')
 
   const [weight, setWeight] = useState('')
   const [date, setDate] = useState(toLocalDateString())
   const [time, setTime] = useState(toLocalTimeString())
+  const [note, setNote] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const reset = useCallback(async () => {
     setDate(toLocalDateString())
     setTime(toLocalTimeString())
+    setNote('')
     setError('')
     if (!editingEntry) {
       try {
         const last = await lastRegister()
-        setWeight(last ? String(last.weight) : '')
+        setWeight(last ? String(toDisplay(last.weight, unit).toFixed(1)) : '')
       } catch {
         setWeight('')
       }
     }
-  }, [editingEntry, lastRegister])
+  }, [editingEntry, lastRegister, unit])
 
   useEffect(() => {
     if (open) {
       if (editingEntry) {
-        setWeight(String(editingEntry.value))
+        setWeight(String(toDisplay(Number(editingEntry.value), unit).toFixed(1)))
         setDate(editingEntry.date?.split('T')[0] ?? toLocalDateString())
         setTime(editingEntry.date?.split('T')[1]?.slice(0, 5) ?? toLocalTimeString())
+        setNote(editingEntry.note ?? '')
         setError('')
       } else {
         reset()
       }
     }
-  }, [open, editingEntry, reset])
+  }, [open, editingEntry, reset, unit])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -51,11 +57,12 @@ export function WeightForm({ open, onClose, editingEntry }) {
     setLoading(true)
     setError('')
     try {
+      const valueKg = fromDisplay(parsed, unit)
       const formattedDate = `${date}T${time}:00`
       if (editingEntry) {
-        await editWeight(editingEntry.id, { value: parsed, date: formattedDate })
+        await editWeight(editingEntry.id, { value: valueKg, date: formattedDate, note })
       } else {
-        await addWeight({ value: parsed, date: formattedDate })
+        await addWeight({ value: valueKg, date: formattedDate, note })
       }
       onClose()
     } catch {
@@ -69,13 +76,11 @@ export function WeightForm({ open, onClose, editingEntry }) {
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className="fixed inset-0 z-40 bg-black/30 md:flex md:items-center md:justify-center"
         onClick={onClose}
       />
 
-      {/* Sheet: slides from bottom on mobile, centered on desktop */}
       <div
         className="fixed bottom-0 inset-x-0 z-50 rounded-t-2xl bg-white p-5 md:bottom-auto md:left-1/2 md:top-1/2 md:w-full md:max-w-md md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -98,7 +103,6 @@ export function WeightForm({ open, onClose, editingEntry }) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Weight input */}
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
               Weight
@@ -115,7 +119,7 @@ export function WeightForm({ open, onClose, editingEntry }) {
                 className="w-full rounded-lg border border-gray-200 bg-white py-3 pl-4 pr-14 text-3xl font-mono font-semibold tabular-nums text-gray-900 outline-none focus:border-lime-400 focus:ring-2 focus:ring-lime-100"
               />
               <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-lg text-gray-400">
-                kg
+                {unit}
               </span>
             </div>
           </div>
@@ -136,6 +140,20 @@ export function WeightForm({ open, onClose, editingEntry }) {
               value={time}
               onChange={(e) => setTime(e.target.value)}
               required
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Note <span className="font-normal normal-case text-gray-400">(optional)</span>
+            </label>
+            <input
+              type="text"
+              maxLength={120}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="e.g. after gym, morning, travel day…"
+              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-300 focus:border-lime-400 focus:ring-2 focus:ring-lime-100"
             />
           </div>
 

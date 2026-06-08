@@ -42,20 +42,20 @@ export const useWeightStore = create((set, get) => ({
     return data ?? []
   },
 
-  async addWeight({ value, date }) {
+  async addWeight({ value, date, note }) {
     const user = getUser()
     const { error } = await supabase
       .from('weights')
-      .insert([{ user_id: user.id, weight: value, date }])
+      .insert([{ user_id: user.id, weight: value, date, note: note || null }])
     if (error) throw error
     await get().fetchWeights()
   },
 
-  async editWeight(id, { value, date }) {
+  async editWeight(id, { value, date, note }) {
     const user = getUser()
     const { error } = await supabase
       .from('weights')
-      .update({ weight: value, date })
+      .update({ weight: value, date, note: note || null })
       .eq('id', id)
       .eq('user_id', user.id)
     if (error) throw error

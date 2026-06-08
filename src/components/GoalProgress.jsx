@@ -1,5 +1,7 @@
 import { useGoalProgress } from '@/hooks/useGoalProgress'
+import { useSettingsStore } from '@/store/settingsStore'
 import { Card } from '@/components/ui/Card'
+import { toDisplay } from '@/utils/weight'
 
 export function GoalProgress() {
   const {
@@ -9,6 +11,10 @@ export function GoalProgress() {
     totalSteps,
     stepCompletionPercentage,
   } = useGoalProgress()
+  const unit = useSettingsStore((s) => s.settings?.unit ?? 'kg')
+
+  const displayStep = goalWeightStep !== null ? toDisplay(goalWeightStep, unit) : null
+  const displayCurrent = currentWeight !== null ? toDisplay(currentWeight, unit) : null
 
   return (
     <Card>
@@ -23,8 +29,8 @@ export function GoalProgress() {
         <div>
           <p className="text-xs text-gray-400">Next milestone</p>
           <p className="mt-0.5 font-mono text-2xl font-semibold tabular-nums text-gray-900">
-            {goalWeightStep !== null ? goalWeightStep.toFixed(1) : '—'}
-            <span className="ml-1 text-sm font-normal text-gray-400">kg</span>
+            {displayStep !== null ? displayStep.toFixed(1) : '—'}
+            <span className="ml-1 text-sm font-normal text-gray-400">{unit}</span>
           </p>
         </div>
         <p className="font-mono text-xl font-semibold tabular-nums text-lime-600">
@@ -39,11 +45,11 @@ export function GoalProgress() {
         />
       </div>
 
-      {currentWeight !== null && (
+      {displayCurrent !== null && (
         <p className="mt-3 text-xs text-gray-400">
           Current:{' '}
           <span className="font-mono font-medium text-gray-700">
-            {currentWeight.toFixed(2)} kg
+            {displayCurrent.toFixed(2)} {unit}
           </span>
         </p>
       )}
