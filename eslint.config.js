@@ -1,13 +1,13 @@
 import js from '@eslint/js'
-import pluginVue from 'eslint-plugin-vue'
-import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
+import reactPlugin from 'eslint-plugin-react'
+import reactHooks from 'eslint-plugin-react-hooks'
+import globals from 'globals'
 
 export default [
   {
     name: 'app/files-to-lint',
-    files: ['**/*.{js,mjs,jsx,vue}'],
+    files: ['**/*.{js,mjs,jsx}'],
   },
-
   {
     name: 'app/files-to-ignore',
     ignores: [
@@ -20,8 +20,29 @@ export default [
       'supabase/volumes/snippets/**',
     ],
   },
-
   js.configs.recommended,
-  ...pluginVue.configs['flat/essential'],
-  skipFormatting,
+  {
+    plugins: {
+      react: reactPlugin,
+      'react-hooks': reactHooks,
+    },
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.es2020,
+      },
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+      },
+    },
+    rules: {
+      ...reactPlugin.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+    },
+    settings: {
+      react: { version: 'detect' },
+    },
+  },
 ]

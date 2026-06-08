@@ -1,12 +1,19 @@
-export const formatDate = (date) => {
-  const d = new Date(date)
-  const day = d.getDate()
-  const month = d.getMonth() + 1
-  const year = d.getFullYear()
-  return `${day}/${month}/${year}`
+export function formatDate(dateString) {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-export const getTimeFromTimestamp = (timestamp) => {
-  const d = new Date(timestamp)
-  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+export function getTimeFromTimestamp(dateString) {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+}
+
+export function toLocalDateString(date = new Date()) {
+  return date.toISOString().slice(0, 10)
+}
+
+export function toLocalTimeString(date = new Date()) {
+  return date.toTimeString().slice(0, 5)
 }
