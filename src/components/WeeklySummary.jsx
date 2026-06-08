@@ -16,9 +16,20 @@ function getISOWeek(date) {
   )
 }
 
+function weekValue(entries, strategy) {
+  if (!entries.length) return null
+  const sorted = [...entries].sort((a, b) => a.t - b.t)
+  if (strategy === 'lowest_weight') return Math.min(...entries.map((e) => e.v))
+  if (strategy === 'last_weight') return sorted[sorted.length - 1].v
+  // moving_average: mean of the week
+  return entries.reduce((a, e) => a + e.v, 0) / entries.length
+}
+
 export function WeeklySummary() {
   const weights = useWeightStore((s) => s.weights)
-  const unit = useSettingsStore((s) => s.settings?.unit ?? 'kg')
+  const settings = useSettingsStore((s) => s.settings)
+  const unit = settings?.unit ?? 'kg'
+  const strategy = settings?.tracking_strategy ?? 'last_weight'
 
   const summary = useMemo(() => {
     if (!weights.length) return null
@@ -27,15 +38,16 @@ export function WeeklySummary() {
     for (const w of weights) {
       const key = getISOWeek(w.date)
       if (!byWeek[key]) byWeek[key] = []
-      byWeek[key].push(Number(w.weight))
+      byWeek[key].push({ t: new Date(w.date).getTime(), v: Number(w.weight) })
     }
 
     const weeks = Object.keys(byWeek).sort().reverse()
     if (weeks.length < 2) return null
 
-    const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length
-    const thisWeekKg = avg(byWeek[weeks[0]])
-    const lastWeekKg = avg(byWeek[weeks[1]])
+    const thisWeekKg = weekValue(byWeek[weeks[0]], strategy)
+    const lastWeekKg = weekValue(byWeek[weeks[1]], strategy)
+    if (thisWeekKg === null || lastWeekKg === null) return null
+
     const deltaKg = thisWeekKg - lastWeekKg
 
     return {
@@ -44,7 +56,7 @@ export function WeeklySummary() {
       direction: deltaKg < -0.01 ? 'down' : deltaKg > 0.01 ? 'up' : 'flat',
       entries: byWeek[weeks[0]].length,
     }
-  }, [weights, unit])
+  }, [weights, unit, strategy])
 
   if (!summary) return null
 
